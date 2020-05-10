@@ -5,7 +5,7 @@ guiServer: board comm gameServer guiServer.h global.h
 
 client: client.c board comm global.h
 	gcc -c state.c board.o -O3
-	gcc -o client client.c board.o comm.o -O3
+	gcc -o client client.c board.o comm.o state.o -O3
 	gcc -o randomClient randomClient.c board.o comm.o -O3
 
 server: server.c board comm gameServer global.h

@@ -1,38 +1,37 @@
-#include "global.h"
-#include "board.h"
-#include "move.h"
-#include "comm.h"
-#include "client.h"
+#include "state.h"
 #include <limits.h>
-
-typedef struct State State;
-struct State
-{
-    State* parent;
-    int value;
-    int depth;
-    // pinakas me pionia? mporei na bgenei apo gamePosition
-    // xreiazetai kati pou 8a perigrafei thn katastash
-};
+#include <stdio.h>
+#include <stdlib.h>
 
 
-// initial state constructoras
-State* state()
+/**********************************************************/
+/**************** Constructors/Destructors ****************/
+/**********************************************************/
+
+State* root_state( Position* gamePosition , char color )
 {
     State *this = malloc( sizeof( State ) );
     this->parent = NULL;
     this->depth = 0;
     this->value = INT_MIN;
 
+    copy_position( gamePosition , &(this->position) );
+
+
     return this;
 }
 
-// new state constructor
-State* state( State* parent )
+State* state( State* parent , Move* move )
 {
     State *this = malloc( sizeof( State ) );
     this->parent = parent;
     this->depth = parent->depth + 1;
+
+    copy_position( &(parent->position) , &(this->position) ); // h allagh gurou ginetai sto doMove
+    
+    copy_move( move , &(this->move) );
+
+    doMove( &(this->position) , &(this->move) );
 
     return this;
 }
@@ -42,6 +41,10 @@ void delete_state ( State* this )
     free( this );
 }
 
+
+/**********************************************************/
+/******************** Minimax methods *********************/
+/**********************************************************/
 
 int max_value ( State *this )
 {
@@ -66,21 +69,33 @@ int min_value ( State* this )
 
 int terminal_test( State* this )
 {
+    // den exei kinish na kanei
+    if( !canMove( this , this->position.turn ) )
+        return TRUE;
+    // isws an den exei mirmigia o antipalos?
+
+    return FALSE;
+}
+
+void actions()
+{
 
 }
 
 int utility( State* this )
 {
-	int enemy_color = WHITE;
-	if ( myColor == WHITE)
-		enemy_color = BLACK;
+	int my_value = this->position.score[ this->position.turn ] ; // isws anti this->position.turn prepei goodies_color
+    int enemy_value = this->position.score[ getOtherSide(this->position.turn) ] ;// isws anti this->position.turn prepei badies_color
 
-	int my_value = gamePosition.score[ myColor ] ;
+    return my_value - enemy_value;
 }
 
 
-/** Metraei posa pionia tou sugkekrimenou xrwmatos uparxoun. */
-int count_pieces( char color )
+/**********************************************************/
+/******************** Utility methods *********************/
+/**********************************************************/
+
+int count_pieces( State* this , char color )
 {
 	int num_pieces = 0;
 
@@ -88,7 +103,7 @@ int count_pieces( char color )
 	{
 		for( int j = 0; j < BOARD_COLUMNS; j++ )
 		{
-			if( gamePosition.board[ i ][ j ] == color )
+			if( this->position.board[ i ][ j ] == color )
 			{
 				num_pieces++;
 			}
@@ -97,25 +112,40 @@ int count_pieces( char color )
 	return num_pieces;
 }
 
-/** Elenxei an uparxei dunato pidima */
 int jump_possible ( State* this )
 {
     int jumpPossible = FALSE;		// determine if we have a jump available
+
     for( int i = 0; i < BOARD_ROWS; i++ )
-    {
         for( int j = 0; j < BOARD_COLUMNS; j++ )
-        {
-            if( gamePosition.board[ i ][ j ] == myColor )
-            {
-                if( canJump( i , j , myColor , &gamePosition ) )
+            if( this->position.board[ i ][ j ] == this->position.turn ) // autounou pou paizei
+                if( canJump( i , j , this->position.turn , &(this->position) ) )
                     jumpPossible = TRUE;
-            }
-        }
-    }
-    return jump_possible;
+            
+    return jumpPossible;
 }
 
-void actions()
-{
 
+/**********************************************************/
+/********************** Data movers ***********************/
+/**********************************************************/
+
+void copy_move( Move* source , Move* target )
+{
+	for (int i = 0 ; i < 2 ; i++ )
+		for (int j = 0 ; j < MAXIMUM_MOVE_SIZE ; j++ )
+			target->tile[i][j] = source->tile[i][j];
+
+	target->color = source->color;	
+}
+
+void copy_position( Position* source , Position* target )
+{
+	for ( int i = 0 ; i < BOARD_ROWS ; i++ )
+		for (int j = 0 ; j < BOARD_COLUMNS ; j++ )
+			target->board[i][j] = source->board[i][j];
+
+	target->score[0] = source->score[0];
+	target->score[1] = source->score[1];
+	target->turn = source->turn;
 }

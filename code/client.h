@@ -5,6 +5,7 @@
 #include "board.h"
 #include "move.h"
 #include "comm.h"
+#include "state.h"
 
 /**********************************************************/
 Position gamePosition;		// Position we are going to use

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <getopt.h>
 
 /**********************************************************/
 Position gamePosition;		// Position we are going to use

@@ -11,8 +11,9 @@ typedef struct
 	char tile[ 2 ][ MAXIMUM_MOVE_SIZE ];	
 	char color;
 } Move;
-/**********************************************************/
 
+
+/**********************************************************/
 
 /*
 Caution!
@@ -27,8 +28,6 @@ Only exception to this is when we have to make the maximum number of moves.
 A Null move (the only legal move when we cannot move) has tile[0][0] = -1.
 
 Server can ask for a move even we have none available.
-
 */
-
 
 #endif
