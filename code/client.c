@@ -117,6 +117,13 @@ int main( int argc, char ** argv )
 						}
 					}
 
+					myMove.tile[ 0 ][ 0 ] = 1;
+					myMove.tile[ 1 ][ 0 ] = 3;
+					myMove.tile[ 0 ][ 1 ] = 0;
+					myMove.tile[ 1 ][ 1 ] = 4;
+					myMove.tile[ 0 ][ 2 ] = -1;
+					minimax_decision( &gamePosition , &myMove );
+
 
 // end of random
 /**********************************************************/

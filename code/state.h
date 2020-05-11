@@ -5,52 +5,28 @@
 #include "board.h"
 #include "move.h"
 
-typedef struct 
-{
-    State* parent;
-    int value;
-    int depth;
-
-    Position position;  // exei board, score kai pios paizei
-    Move move;          // exei pinaka kinishs
-
-    // xreiazetai kati pou 8a perigrafei thn katastash?
-}State;
-
+/** Ws state, 8ewrw ena stigmaiothpo tou board meta apo ka8e kinish.
+ * Den xreiazomai parapanw plhroforia apo to Position, gia auto den uparxei struct state.
+ * Gia na dhmiourgh8ei nea katastash (neo Position) ginetai pass by value.
+ */
 
 char goodies_color;
 char badies_color;
-
-/**********************************************************/
-/**************** Constructors/Destructors ****************/
-/**********************************************************/
-
-/** Root State constructor.
- * Returns a pointer of the new state.
- */
-State* root_state( Position* gamePosition , char color );
-
-/** New State constructor.
- * Returns a pointer of the new state.
- */
-State* state( State* parent , Move* move );
-
-void delete_state ( State* this );
 
 
 /**********************************************************/
 /******************** Minimax methods *********************/
 /**********************************************************/
 
-int max_value ( State* this );
+void minimax_decision( Position* position , Move* move );
 
-int min_value ( State* this );
+int max_value ( Position position );
 
-int terminal_test( State* this );
+int min_value ( Position position );
 
-void actions();
+int terminal_test( Position* position );
 
-int utility( State* this );
+int utility( Position* position );
 
 
 /**********************************************************/
@@ -58,10 +34,10 @@ int utility( State* this );
 /**********************************************************/
 
 /** Metraei posa pionia tou sugkekrimenou xrwmatos uparxoun. */
-int count_pieces( State* this , char color );
+int count_pieces( Position* position , char color );
 
 /** Elenxei an uparxei dunato pidima. */
-int jump_possible ( State* this );
+int jump_possible ( Position* position );
 
 
 /**********************************************************/

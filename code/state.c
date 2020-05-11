@@ -5,87 +5,88 @@
 
 
 /**********************************************************/
-/**************** Constructors/Destructors ****************/
-/**********************************************************/
-
-State* root_state( Position* gamePosition , char color )
-{
-    State *this = malloc( sizeof( State ) );
-    this->parent = NULL;
-    this->depth = 0;
-    this->value = INT_MIN;
-
-    copy_position( gamePosition , &(this->position) );
-
-
-    return this;
-}
-
-State* state( State* parent , Move* move )
-{
-    State *this = malloc( sizeof( State ) );
-    this->parent = parent;
-    this->depth = parent->depth + 1;
-
-    copy_position( &(parent->position) , &(this->position) ); // h allagh gurou ginetai sto doMove
-    
-    copy_move( move , &(this->move) );
-
-    doMove( &(this->position) , &(this->move) );
-
-    return this;
-}
-
-void delete_state ( State* this )
-{
-    free( this );
-}
-
-
-/**********************************************************/
 /******************** Minimax methods *********************/
 /**********************************************************/
 
-int max_value ( State *this )
+void minimax_decision( Position* position , Move* move )
 {
-    if ( terminal_test( this ) == TRUE )
-        return utility( this );
+    // loop me oles tis dinates kiniseis
+    // an nea kinish exei kalutero value: move = new_move 
+}
+
+int max_value ( Position position )
+{
+    if ( terminal_test( &position ) == TRUE )
+        return utility( &position );
 
     int value = INT_MIN;
 
-    // find each legal action
-    // for each action do move and create new state
-    // gia ka8e neo state kalese max( v , MIN( neo state ) )
-    // epestrepse v tou mikroterou
+    Move newMove;
+    Position newPosition;
+
+    // den uparxei dia8esimh kinhsh
+    if( !canMove( &position , position.turn ) )
+    {
+        newMove.tile[ 0 ][ 0 ] = -1;		//null move
+
+        // neo state
+        copy_position( &position , &newPosition );
+        doMove( &newPosition , &newMove );
+
+        // epilogh megaluterou value apo ta nea state
+        int child_value = min_value( newPosition ) ;
+        if( child_value > value )
+            return value;
+    }
+    else //uparxei kinish
+    {
+        // elenxos pidimatos
+        int jump = jump_possible( &position );            
+
+        for( int i = 0; i < BOARD_ROWS; i++ )
+        {
+            for( int j = 0; j < BOARD_COLUMNS; j++ )
+            {
+                //piece we are going to move
+                newMove.tile[ 0 ][ 0 ] = i;
+                newMove.tile[ 1 ][ 0 ] = j;
+
+                // uparxei pidima
+                if ( jump == FALSE )
+                {
+                    // kane ka8e kinish kai epestrepse to kalutero skor. Den xreiazetai na 8umamai ti htan h kinhsh.
+                }
+                // den uparxei
+                else
+                {
+                    
+                }
+                
+            }
+        }
+    }
 }
 
-int min_value ( State* this )
+int min_value ( Position position )
 {
-    if ( terminal_test( this ) == TRUE )
-        return utility( this );
+    if ( terminal_test( &position ) == TRUE )
+        return utility( &position );
 
     int value = INT_MAX;
 }
 
-int terminal_test( State* this )
+int terminal_test( Position* position )
 {
-    // den exei kinish na kanei
-    if( !canMove( this , this->position.turn ) )
-        return TRUE;
-    // isws an den exei mirmigia o antipalos?
+    // isws an den exei mirmigia kapios?
+    // an ola ta mirmigia mou einai pera apo tou allou
 
     return FALSE;
 }
 
-void actions()
+int utility( Position* position )
 {
-
-}
-
-int utility( State* this )
-{
-	int my_value = this->position.score[ this->position.turn ] ; // isws anti this->position.turn prepei goodies_color
-    int enemy_value = this->position.score[ getOtherSide(this->position.turn) ] ;// isws anti this->position.turn prepei badies_color
+	int my_value = position->score[ position->turn ] ; // isws anti this->position.turn prepei goodies_color
+    int enemy_value = position->score[ getOtherSide( position->turn ) ] ;// isws anti this->position.turn prepei badies_color
 
     return my_value - enemy_value;
 }
@@ -95,31 +96,26 @@ int utility( State* this )
 /******************** Utility methods *********************/
 /**********************************************************/
 
-int count_pieces( State* this , char color )
+int count_pieces( Position* position , char color )
 {
 	int num_pieces = 0;
 
 	for( int i = 0; i < BOARD_ROWS; i++ )
-	{
 		for( int j = 0; j < BOARD_COLUMNS; j++ )
-		{
-			if( this->position.board[ i ][ j ] == color )
-			{
+			if( position->board[ i ][ j ] == color )
 				num_pieces++;
-			}
-		}
-	}
+
 	return num_pieces;
 }
 
-int jump_possible ( State* this )
+int jump_possible ( Position* position )
 {
     int jumpPossible = FALSE;		// determine if we have a jump available
 
     for( int i = 0; i < BOARD_ROWS; i++ )
         for( int j = 0; j < BOARD_COLUMNS; j++ )
-            if( this->position.board[ i ][ j ] == this->position.turn ) // autounou pou paizei
-                if( canJump( i , j , this->position.turn , &(this->position) ) )
+            if( position->board[ i ][ j ] == position->turn ) // autounou pou paizei
+                if( canJump( i , j , position->turn , &position ) )
                     jumpPossible = TRUE;
             
     return jumpPossible;
