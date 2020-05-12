@@ -29,6 +29,9 @@ void printPosition( Position * pos );
 //Caution!!! does not check if it is legal! Simply does the move!
 void doMove( Position * pos, Move * moveToDo );
 
+// kanei to idio me thn doMove alla dinei panta pontous to fai
+void doMove2( Position * pos, Move * moveToDo );
+
 // returns 1 if we can jump to the left 2 if we can jump to the right 3 if we can jump both directions and 0 if no jump is possible
 // row,col can be empty. So it can also be used to determine if we can make a jump from a position we do not occupy
 //Caution!!! does no checks if we are inside the board

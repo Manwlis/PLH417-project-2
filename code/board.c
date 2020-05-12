@@ -176,7 +176,6 @@ void doMove( Position * pos, Move * moveToDo )
 			}				
 
 		}
-
 		if( moveToDo->tile[ 0 ][ intex ] == 0 )
 			pos->score[ BLACK ]++;	//Black scored!
 		else if( moveToDo->tile[ 0 ][ intex ] == BOARD_ROWS-1 )
@@ -188,15 +187,65 @@ void doMove( Position * pos, Move * moveToDo )
 
 		if( intex == MAXIMUM_MOVE_SIZE )	// if all move tiles used
 			break;
-
 	}
-
 	/*change turn*/
 	pos->turn = getOtherSide( pos->turn );
-
 }
 
+void doMove2( Position * pos, Move * moveToDo )
+{
+	int i, j;
+	int intex = 1;
+	int stepI, stepJ;
 
+	assert( pos->turn == moveToDo->color );
+
+	if( moveToDo->tile[ 0 ][ 0 ] == -1 )	//if null move, then simply change turn
+	{
+		pos->turn = getOtherSide( pos->turn );
+		return;
+	}
+
+	while( moveToDo->tile[ 0 ][ intex ] != -1 )		//while we have tile available
+	{
+		pos->board[ moveToDo->tile[ 0 ][ intex - 1 ] ][ moveToDo->tile[ 1 ][ intex - 1 ] ] = EMPTY;	//remove piece
+
+		if( abs( moveToDo->tile[ 0 ][ intex - 1 ] - moveToDo->tile[ 0 ][ intex ] ) > 1 )	//if we had jump
+		{
+			stepI = ( moveToDo->tile[ 0 ][ intex ] - moveToDo->tile[ 0 ][ intex - 1 ] ) / 2;
+			stepJ = ( moveToDo->tile[ 1 ][ intex ] - moveToDo->tile[ 1 ][ intex - 1 ] ) / 2;
+
+			pos->board[ moveToDo->tile[ 0 ][ intex - 1 ] + stepI ][ moveToDo->tile[ 1 ][ intex - 1 ] + stepJ ] = EMPTY;	//remove the captured piece
+		}
+		// Tile with food?
+		if(pos->board[ moveToDo->tile[ 0 ][ intex  ] ][ moveToDo->tile[ 1 ][ intex  ] ] == RTILE){
+			// Probability 1/2
+			
+			/********Eblgala to rand *******/
+				if(moveToDo->color==BLACK){
+					pos->score[ BLACK ]++;	//Black scored (food)!
+				}
+				else if(moveToDo->color==WHITE){
+					pos->score[ WHITE ]++; //White scored (food)!
+				}
+			/*******************************/	
+
+		}
+		if( moveToDo->tile[ 0 ][ intex ] == 0 )
+			pos->score[ BLACK ]++;	//Black scored!
+		else if( moveToDo->tile[ 0 ][ intex ] == BOARD_ROWS-1 )
+			pos->score[ WHITE ]++;	//White scored!
+		else
+			pos->board[ moveToDo->tile[ 0 ][ intex ] ][ moveToDo->tile[ 1 ][ intex ] ] = moveToDo->color;	//place piece
+
+		intex++;
+
+		if( intex == MAXIMUM_MOVE_SIZE )	// if all move tiles used
+			break;
+	}
+	/*change turn*/
+	pos->turn = getOtherSide( pos->turn );
+}
 /**********************************************************/
 int canJump( char row, char col, char player, Position * pos )
 {

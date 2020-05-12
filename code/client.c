@@ -104,24 +104,7 @@ int main( int argc, char ** argv )
 					else
 						playerDirection = -1;
 
-					jumpPossible = FALSE;		// determine if we have a jump available
-					for( i = 0; i < BOARD_ROWS; i++ )
-					{
-						for( j = 0; j < BOARD_COLUMNS; j++ )
-						{
-							if( gamePosition.board[ i ][ j ] == myColor )
-							{
-								if( canJump( i, j, myColor, &gamePosition ) )
-									jumpPossible = TRUE;
-							}
-						}
-					}
 
-					myMove.tile[ 0 ][ 0 ] = 1;
-					myMove.tile[ 1 ][ 0 ] = 3;
-					myMove.tile[ 0 ][ 1 ] = 0;
-					myMove.tile[ 1 ][ 1 ] = 4;
-					myMove.tile[ 0 ][ 2 ] = -1;
 					minimax_decision( &gamePosition , &myMove );
 
 

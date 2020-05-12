@@ -50,4 +50,6 @@ void copy_move( Move* source , Move* target );
 /** Copy source Position to target Position. */
 void copy_position( Position* source , Position* target );
 
+/** Epistefei thn kateu8unsh tou paixth pou paizei. +-1 */
+int player_direction( Position* pos );
 #endif
