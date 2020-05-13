@@ -10,10 +10,11 @@
 
 void minimax_decision( Position* position , Move* move )
 {
+    int legal_moves = 0;
     // elenxos pidimatos
     int jump_flag = jump_possible( position );
 
-    int direction = player_direction( position );
+    int column_direction = player_direction( position );
     
     int value;
     int best_move_value = INT_MIN;
@@ -26,23 +27,24 @@ void minimax_decision( Position* position , Move* move )
     {
         for( int j = 0; j < BOARD_COLUMNS; j++ )
         {
-            if( position->board[ i ][ j ] == goodies_color ) // diko tou pioni
+            if( position->board[ i ][ j ] == position->turn ) // diko tou pioni
             {
                 //piece we are going to move
                 temp_move.tile[ 0 ][ 0 ] = i;
                 temp_move.tile[ 1 ][ 0 ] = j;
 
-                // den uparxei pidima
                 if ( jump_flag == FALSE )
                 {
+/******** jump not possible ********/
                     // kane ka8e kinish kai epestrepse to kalutero skor. Den xreiazetai na 8umamai ti htan h kinhsh.
-                    temp_move.tile[ 0 ][ 1 ] = i + 1 * direction;
+                    temp_move.tile[ 0 ][ 1 ] = i + 1 * column_direction ;
                     temp_move.tile[ 0 ][ 2 ] = -1; // mia kinish an den uparxei pidima
 
                     // kinish aristera
                     temp_move.tile[ 1 ][ 1 ] = j - 1;
                     if( isLegal( position , &temp_move ))
                     {
+legal_moves++;
                         // kanei kinish
                         copy_position( position , &new_position );
                         doMove2( &new_position , &temp_move );
@@ -61,6 +63,7 @@ void minimax_decision( Position* position , Move* move )
                     temp_move.tile[ 1 ][ 1 ] = j + 1;
                     if( isLegal( position , &temp_move ))
                     {
+legal_moves++;
                         copy_position( position , &new_position );
                         doMove2( &new_position , &temp_move );
 
@@ -71,17 +74,127 @@ void minimax_decision( Position* position , Move* move )
                             copy_move( &temp_move , move );
                         }
                     }
-                
+/***********************************/           
                 }
-                // uparxei
-                else
+                else if ( canJump( i , j , position->turn , position ) )
                 {
-                    
+/******** Jump possible ********/ // dokimazw xwris can jump
+                    temp_move.tile[0][1] = temp_move.tile[0][0] + 2 * column_direction;
+                    for ( int row_direction1 = -2 ; row_direction1 <= 2 ; row_direction1 += 4)
+                    {
+                        temp_move.tile[1][1] = temp_move.tile[1][0] + row_direction1;
+                        temp_move.tile[0][2] = -1;
+                        printf("( %d , %d ) , ( %d , %d ) , ( %d ) , %d\n" , temp_move.tile[0][0] , temp_move.tile[1][0] , temp_move.tile[0][1] , temp_move.tile[1][1] , temp_move.tile[0][2] ,  isLegal( position , &temp_move ));
+                        if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                        {
+legal_moves++;
+                            copy_position( position , &new_position );
+                            doMove2( &new_position , &temp_move );
+
+                            value = min_value( new_position );
+                            if( best_move_value < value )
+                            {
+                                best_move_value = value;
+                                copy_move( &temp_move , move );
+                            }
+                        }
+                        else // exei kai allo
+                        {
+                            temp_move.tile[0][2] = temp_move.tile[ 0 ][ 1 ] + 2 * column_direction;
+                            for ( int row_direction2 = -2 ; row_direction2 <= 2 ; row_direction2 += 4)
+                            {
+                                temp_move.tile[1][2] = temp_move.tile[1][1] + row_direction2;
+                                temp_move.tile[0][3] = -1;
+                                if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                {
+legal_moves++;
+                                    copy_position( position , &new_position );
+                                    doMove2( &new_position , &temp_move );
+
+                                    value = min_value( new_position );
+                                    if( best_move_value < value )
+                                    {
+                                        best_move_value = value;
+                                        copy_move( &temp_move , move );
+                                    }
+                                }
+                                else
+                                {
+                                    temp_move.tile[0][3] = temp_move.tile[ 0 ][ 2 ] + 2 * column_direction;
+                                    for ( int row_direction3 = -2 ; row_direction3 <= 2 ; row_direction3 += 4)
+                                    {
+                                        temp_move.tile[1][3] = temp_move.tile[1][2] + row_direction3;
+                                        temp_move.tile[0][4] = -1;
+                                        if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                        {
+legal_moves++;
+                                            copy_position( position , &new_position );
+                                            doMove2( &new_position , &temp_move );
+
+                                            value = min_value( new_position );
+                                            if( best_move_value < value )
+                                            {
+                                                best_move_value = value;
+                                                copy_move( &temp_move , move );
+                                            }
+                                        }
+                                        else
+                                        {
+                                            temp_move.tile[0][4] = temp_move.tile[ 0 ][ 3 ] + 2 * column_direction;
+                                            for ( int row_direction4 = -2 ; row_direction4 <= 2 ; row_direction4 += 4)
+                                            {
+                                                temp_move.tile[1][4] = temp_move.tile[1][3] + row_direction4;
+                                                temp_move.tile[0][5] = -1;
+                                                if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                {
+legal_moves++;
+                                                    copy_position( position , &new_position );
+                                                    doMove2( &new_position , &temp_move );
+
+                                                    value = min_value( new_position );
+                                                    if( best_move_value < value )
+                                                    {
+                                                        best_move_value = value;
+                                                        copy_move( &temp_move , move );
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    temp_move.tile[0][5] = temp_move.tile[ 0 ][ 4 ] + 2 * column_direction;
+                                                    for ( int row_direction5 = -2 ; row_direction5 <= 2 ; row_direction5 += 4)
+                                                    {
+                                                        temp_move.tile[1][5] = temp_move.tile[1][4] + row_direction5;
+                                                        if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                        {
+legal_moves++;
+                                                            copy_position( position , &new_position );
+                                                            doMove2( &new_position , &temp_move );
+
+                                                            value = min_value( new_position );
+                                                            if( best_move_value < value )
+                                                            {
+                                                                best_move_value = value;
+                                                                copy_move( &temp_move , move );
+                                                            }
+                                                        }
+                                                    } // 5 jump
+                                                }
+                                            } // 4 jump
+                                        }
+                                    } // 3 jump
+                                }
+                            } // 2 jump
+                        }
+                    } // 1 jump
+/******************************/
                 }
             }
         }
     }
+    printf( "Legal moves: %d\n" , legal_moves );
 }
+
+
 
 // se periptwsh stack overflow na pernaw pointer, malloc kainourgio struct, copy se auto
 int max_value ( Position position )
@@ -112,13 +225,13 @@ int max_value ( Position position )
     // elenxos pidimatos
     int jump_flag = jump_possible( &position );
 
-    int direction = player_direction( &position );          
+    int column_direction = player_direction( &position );          
 
     for( int i = 0; i < BOARD_ROWS; i++ )
     {
         for( int j = 0; j < BOARD_COLUMNS; j++ )
         {
-            if( position.board[ i ][ j ] == goodies_color ) // diko tou pioni
+            if( position.board[ i ][ j ] == position.turn ) // diko tou pioni
             {
                 //piece we are going to move
                 temp_move.tile[ 0 ][ 0 ] = i;
@@ -128,7 +241,7 @@ int max_value ( Position position )
                 if ( jump_flag == FALSE )
                 {
                     // kane ka8e kinish kai epestrepse to kalutero skor. Den xreiazetai na 8umamai ti htan h kinhsh.
-                    temp_move.tile[ 0 ][ 1 ] = i + 1 * direction;
+                    temp_move.tile[ 0 ][ 1 ] = i + 1 * column_direction;
                     temp_move.tile[ 0 ][ 2 ] = -1; // mia kinish an den uparxei pidima
 
                     // kinish aristera
@@ -157,10 +270,96 @@ int max_value ( Position position )
                             best_move_value = value;
                     }
                 }
-                // uparxei
-                else
+                else if ( canJump( i , j , position.turn , &position ) )
                 {
-                    
+/******** Jump possible ********/ // dokimazw xwris can jump
+                    temp_move.tile[0][1] = temp_move.tile[0][0] + 2 * column_direction;
+                    for ( int row_direction1 = -2 ; row_direction1 <= 2 ; row_direction1 += 4)
+                    {
+                        temp_move.tile[1][1] = temp_move.tile[1][0] + row_direction1;
+                        temp_move.tile[0][2] = -1;
+                        if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                        {
+                            copy_position( &position , &new_position );
+                            doMove2( &new_position , &temp_move );
+
+                            value = min_value( new_position );
+                            if( best_move_value < value )
+                                best_move_value = value;
+                        }
+                        else // exei kai allo
+                        {
+                            temp_move.tile[0][2] = temp_move.tile[ 0 ][ 1 ] + 2 * column_direction;
+                            for ( int row_direction2 = -2 ; row_direction2 <= 2 ; row_direction2 += 4)
+                            {
+                                temp_move.tile[1][2] = temp_move.tile[1][1] + row_direction2;
+                                temp_move.tile[0][3] = -1;
+                                if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                {
+                                    copy_position( &position , &new_position );
+                                    doMove2( &new_position , &temp_move );
+
+                                    value = min_value( new_position );
+                                    if( best_move_value < value )
+                                        best_move_value = value;
+                                }
+                                else
+                                {
+                                    temp_move.tile[0][3] = temp_move.tile[ 0 ][ 2 ] + 2 * column_direction;
+                                    for ( int row_direction3 = -2 ; row_direction3 <= 2 ; row_direction3 += 4)
+                                    {
+                                        temp_move.tile[1][3] = temp_move.tile[1][2] + row_direction3;
+                                        temp_move.tile[0][4] = -1;
+                                        if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                        {
+                                            copy_position( &position , &new_position );
+                                            doMove2( &new_position , &temp_move );
+
+                                            value = min_value( new_position );
+                                            if( best_move_value < value )
+                                                best_move_value = value;
+                                        }
+                                        else
+                                        {
+                                            temp_move.tile[0][4] = temp_move.tile[ 0 ][ 3 ] + 2 * column_direction;
+                                            for ( int row_direction4 = -2 ; row_direction4 <= 2 ; row_direction4 += 4)
+                                            {
+                                                temp_move.tile[1][4] = temp_move.tile[1][3] + row_direction4;
+                                                temp_move.tile[0][5] = -1;
+                                                if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                {
+                                                    copy_position( &position , &new_position );
+                                                    doMove2( &new_position , &temp_move );
+
+                                                    value = min_value( new_position );
+                                                    if( best_move_value < value )
+                                                        best_move_value = value;
+                                                }
+                                                else
+                                                {
+                                                    temp_move.tile[0][5] = temp_move.tile[ 0 ][ 4 ] + 2 * column_direction;
+                                                    for ( int row_direction5 = -2 ; row_direction5 <= 2 ; row_direction5 += 4)
+                                                    {
+                                                        temp_move.tile[1][5] = temp_move.tile[1][4] + row_direction5;
+                                                        if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                        {
+                                                            copy_position( &position , &new_position );
+                                                            doMove2( &new_position , &temp_move );
+
+                                                            value = min_value( new_position );
+                                                            if( best_move_value < value )
+                                                                best_move_value = value;
+                                                        }
+                                                    } // 5 jump
+                                                }
+                                            } // 4 jump
+                                        }
+                                    } // 3 jump
+                                }
+                            } // 2 jump
+                        }
+                    } // 1 jump
+/******************************/   
                 }
             }
         }
@@ -197,7 +396,7 @@ int min_value ( Position position )
     // elenxos pidimatos
     int jump_flag = jump_possible( &position );
 
-    int direction = player_direction( &position );          
+    int column_direction = player_direction( &position );          
 
     for( int i = 0; i < BOARD_ROWS; i++ )
     {
@@ -213,7 +412,7 @@ int min_value ( Position position )
                 if ( jump_flag == FALSE )
                 {
                     // kane ka8e kinish kai epestrepse to kalutero skor. Den xreiazetai na 8umamai ti htan h kinhsh.
-                    temp_move.tile[ 0 ][ 1 ] = i + 1 * direction;
+                    temp_move.tile[ 0 ][ 1 ] = i + 1 * column_direction ;
                     temp_move.tile[ 0 ][ 2 ] = -1; // mia kinish an den uparxei pidima
 
                     // kinish aristera
@@ -242,10 +441,96 @@ int min_value ( Position position )
                             best_move_value = value;
                     }
                 }
-                // uparxei
-                else
+                else if ( canJump( i , j , position.turn , &position ) )
                 {
-                    
+/******** Jump possible ********/ // dokimazw xwris can jump
+                    temp_move.tile[0][1] = temp_move.tile[0][0] + 2 * column_direction;
+                    for ( int row_direction1 = -2 ; row_direction1 <= 2 ; row_direction1 += 4)
+                    {
+                        temp_move.tile[1][1] = temp_move.tile[1][0] + row_direction1;
+                        temp_move.tile[0][2] = -1;
+                        if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                        {
+                            copy_position( &position , &new_position );
+                            doMove2( &new_position , &temp_move );
+
+                            value = max_value( new_position );
+                            if( best_move_value > value )
+                                best_move_value = value;
+                        }
+                        else // exei kai allo
+                        {
+                            temp_move.tile[0][2] = temp_move.tile[ 0 ][ 1 ] + 2 * column_direction;
+                            for ( int row_direction2 = -2 ; row_direction2 <= 2 ; row_direction2 += 4)
+                            {
+                                temp_move.tile[1][2] = temp_move.tile[1][1] + row_direction2;
+                                temp_move.tile[0][3] = -1;
+                                if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                {
+                                    copy_position( &position , &new_position );
+                                    doMove2( &new_position , &temp_move );
+
+                                    value = max_value( new_position );
+                                    if( best_move_value > value )
+                                        best_move_value = value;
+                                }
+                                else
+                                {
+                                    temp_move.tile[0][3] = temp_move.tile[ 0 ][ 2 ] + 2 * column_direction;
+                                    for ( int row_direction3 = -2 ; row_direction3 <= 2 ; row_direction3 += 4)
+                                    {
+                                        temp_move.tile[1][3] = temp_move.tile[1][2] + row_direction3;
+                                        temp_move.tile[0][4] = -1;
+                                        if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                        {
+                                            copy_position( &position , &new_position );
+                                            doMove2( &new_position , &temp_move );
+
+                                            value = max_value( new_position );
+                                            if( best_move_value > value )
+                                                best_move_value = value;
+                                        }
+                                        else
+                                        {
+                                            temp_move.tile[0][4] = temp_move.tile[ 0 ][ 3 ] + 2 * column_direction;
+                                            for ( int row_direction4 = -2 ; row_direction4 <= 2 ; row_direction4 += 4)
+                                            {
+                                                temp_move.tile[1][4] = temp_move.tile[1][3] + row_direction4;
+                                                temp_move.tile[0][5] = -1;
+                                                if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                {
+                                                    copy_position( &position , &new_position );
+                                                    doMove2( &new_position , &temp_move );
+
+                                                    value = max_value( new_position );
+                                                    if( best_move_value > value )
+                                                        best_move_value = value;
+                                                }
+                                                else
+                                                {
+                                                    temp_move.tile[0][5] = temp_move.tile[ 0 ][ 4 ] + 2 * column_direction;
+                                                    for ( int row_direction5 = -2 ; row_direction5 <= 2 ; row_direction5 += 4)
+                                                    {
+                                                        temp_move.tile[1][5] = temp_move.tile[1][4] + row_direction5;
+                                                        if( isLegal( &position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                        {
+                                                            copy_position( &position , &new_position );
+                                                            doMove2( &new_position , &temp_move );
+
+                                                            value = max_value( new_position );
+                                                            if( best_move_value > value )
+                                                                best_move_value = value;
+                                                        }
+                                                    } // 5 jump
+                                                }
+                                            } // 4 jump
+                                        }
+                                    } // 3 jump
+                                }
+                            } // 2 jump
+                        }
+                    } // 1 jump
+/******************************/   
                 }
             }
         }
@@ -296,8 +581,8 @@ int terminal_test( Position* position )
 
 int utility( Position* position )
 {
-	int my_value = position->score[ goodies_color ];
-    int enemy_value = position->score[ badies_color ];
+	int my_value = position->score[ goodies_color ] * 2;
+    int enemy_value = position->score[ badies_color ] * 2;
 
     int ants[2] = { 0 , 0 };
     int food = 0;
@@ -342,15 +627,13 @@ int count_pieces( Position* position , char color )
 
 int jump_possible ( Position* position )
 {
-    int jumpPossible = FALSE;		// determine if we have a jump available
-
     for( int i = 0; i < BOARD_ROWS; i++ )
         for( int j = 0; j < BOARD_COLUMNS; j++ )
             if( position->board[ i ][ j ] == position->turn ) // autounou pou paizei
                 if( canJump( i , j , position->turn , position ) )
-                    jumpPossible = TRUE;
+                    return TRUE;
             
-    return jumpPossible;
+    return FALSE;
 }
 
 

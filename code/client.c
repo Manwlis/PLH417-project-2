@@ -97,24 +97,21 @@ int main( int argc, char ** argv )
 				{
 
 /**********************************************************/
-// random player - not the most efficient implementation
 
 					if( myColor == WHITE )		// find movement's direction
 						playerDirection = 1;
 					else
 						playerDirection = -1;
 
+					while(!isLegal( &gamePosition , &myMove ) )
+						minimax_decision( &gamePosition , &myMove );
 
-					minimax_decision( &gamePosition , &myMove );
-
-
-// end of random
 /**********************************************************/
 
 				}
 
 				sendMove( &myMove, mySocket );			//send our move
-				//printf("i chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
+				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
 				doMove( &gamePosition, &myMove );		//play our move on our position
 				printPosition( &gamePosition );
 				
