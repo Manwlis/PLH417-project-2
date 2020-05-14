@@ -14,17 +14,20 @@ char goodies_color;
 char badies_color;
 
 
+int flag_grammh;
+int flag_teleiwse;
+int flag_parathse;
 /**********************************************************/
 /******************** Minimax methods *********************/
 /**********************************************************/
 
 void minimax_decision( Position* position , Move* move );
 
-int max_value ( Position position );
+int max_value ( Position position , int depth );
 
-int min_value ( Position position );
+int min_value ( Position position , int depth );
 
-int terminal_test( Position* position );
+int terminal_test( Position* position , int depth );
 
 int utility( Position* position );
 
@@ -32,6 +35,12 @@ int utility( Position* position );
 /**********************************************************/
 /******************** Utility methods *********************/
 /**********************************************************/
+
+/** doMove Wrapper. Epistrefei to neo best_move_value. */
+int call_max( Position* position , Move* temp_move , int depth , int best_move_value );
+
+/** doMove Wrapper. Epistrefei to neo best_move_value. */
+int call_min( Position* position , Move* temp_move , int depth , int best_move_value );
 
 /** Metraei posa pionia tou sugkekrimenou xrwmatos uparxoun. */
 int count_pieces( Position* position , char color );

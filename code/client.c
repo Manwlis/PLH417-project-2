@@ -82,7 +82,7 @@ int main( int argc, char ** argv )
 				getMove( &moveReceived, mySocket );
 				moveReceived.color = getOtherSide( myColor );
 				doMove( &gamePosition, &moveReceived );		//play opponent's move on our position
-				printPosition( &gamePosition );
+//				printPosition( &gamePosition );
 				break;
 
 			case NM_REQUEST_MOVE:		//server requests our move
@@ -103,16 +103,25 @@ int main( int argc, char ** argv )
 					else
 						playerDirection = -1;
 
-					while(!isLegal( &gamePosition , &myMove ) )
-						minimax_decision( &gamePosition , &myMove );
-
+// min_num = 0;
+// max_num = 0;
+// termatika = 0;
+					
+				minimax_decision( &gamePosition , &myMove );
+//printf("%d\n" , termatika);
 /**********************************************************/
 
 				}
 
 				sendMove( &myMove, mySocket );			//send our move
-				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
 				doMove( &gamePosition, &myMove );		//play our move on our position
+
+				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
+//				printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
+
+if ( flag_grammh == TRUE || flag_parathse == TRUE || flag_teleiwse == TRUE )
+	printf(" ta exei parathsei\n");
+				fflush(stdout);
 				printPosition( &gamePosition );
 				
 				break;
