@@ -30,6 +30,7 @@
 #define BOARD_COLUMNS 8
 #define BOARD_ROWS 12
 #define BOARD_SIZE 8
+#define NUM_ANTS 12
 
 /* Values for each possible tile state */
 #define WHITE 0

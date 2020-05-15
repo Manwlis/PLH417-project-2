@@ -11,6 +11,7 @@ typedef struct
 	char board[ BOARD_ROWS ][ BOARD_COLUMNS ];
 	char score[ 2 ];
 	char turn;
+	int dead[2];
 } Position;
 
 
