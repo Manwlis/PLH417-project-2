@@ -101,20 +101,21 @@ int main( int argc, char ** argv )
 				break;
 
 			case NM_REQUEST_MOVE:		//server requests our move
+			
 				myMove.color = myColor;
 				
-printf("paizw!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+				num_moves = 0;
+				min_num = 0;
+				max_num = 0;
+
 				if( !canMove( &gamePosition, myColor ) )
 				{
 					myMove.tile[ 0 ][ 0 ] = -1;		//null move
 				}
 				else
-				{
-					min_num = 0;
-					max_num = 0;				
+				{		
 					minimax_decision( &gamePosition , &myMove );
 				}
-printf("epaiksa!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");		
 
 				// o monos tropos na meiw8oun ta murmugkia tou antipalou einai na tou ta faw
 				ants_before_move = count_pieces( &gamePosition , getOtherSide(myColor) );
@@ -122,14 +123,13 @@ printf("epaiksa!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 				sendMove( &myMove, mySocket );			//send our move
 				doMove2( &gamePosition, &myMove );		//play our move on our position
 
+				gamePosition.dead[ getOtherSide(myColor) ] += ants_before_move - count_pieces( &gamePosition , getOtherSide(myColor) );
 
-
+				printf("Num legal moves: %d\n" , num_moves );
 				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
 				printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
 				printPosition( &gamePosition );
 
-				gamePosition.dead[ getOtherSide(myColor) ] += ants_before_move - count_pieces( &gamePosition , getOtherSide(myColor) );
-				printf("W dead: %d , B dead: %d\n" , gamePosition.dead[WHITE] , gamePosition.dead[BLACK] );
 				break;
 
 			case NM_QUIT:			//server wants us to quit...we shall obey
