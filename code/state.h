@@ -5,20 +5,12 @@
 #include "board.h"
 #include "move.h"
 
-// ba8os 7
-// a-b pruning: 81,637 , 27,615
-// xwris pruning: 3,554,855 , 362,742   // ~ 8.8^7. Logiko na exei peripou 9 kiniseis dia8esimes
-
-// ba8os 9
-// a-b pruning: 600,745 , 175,223
-// apagoreutiko     // 8.8^9 ~= 316,478,381 
-
-// ba8os 10
-// a-b pruning: 1,896,083 , 4,631,834 / 2.602.140 , 5.735.550
-
-#define SEARCH_DEPTH 8
+#define SEARCH_DEPTH 10
 #define A_B_PRUNING_ACTIVE 1
-#define MAX_LEGAL_MOVES 30
+#define MOVE_REORDER_ACTIVE 1
+#define NO_STOP_AT_VOLATILE 1
+#define MAX_LEGAL_MOVES 25
+
 /** Ws state, 8ewrw ena stigmaiothpo tou board meta apo ka8e kinish.
  * Den xreiazomai parapanw plhroforia apo to Position, gia auto den uparxei struct state.
  * Gia na dhmiourgh8ei nea katastash (neo Position) ginetai pass by value.
@@ -31,6 +23,7 @@ int num_moves;
 int min_num;
 int max_num;
 
+
 /**********************************************************/
 /******************** Minimax methods *********************/
 /**********************************************************/
@@ -41,9 +34,9 @@ int max_value ( Position position , int depth , int a , int b );
 
 int min_value ( Position position , int depth , int a , int b  );
 
-int terminal_test( Position* position , int depth );
+int terminal_test( Position* position , int depth , int jump_flag );
 
-int utility( Position* position );
+int utility( Position* position , int jump_flag );
 
 
 /**********************************************************/
@@ -51,10 +44,14 @@ int utility( Position* position );
 /**********************************************************/
 
 /** Briskei oles tis dunates kiniseis kai tis bazei ston pinaka legal_moves. Epistrefei to plh8os tous. */
-int find_moves( Position* position , Move* legal_moves );
+int find_moves_white( Position* position , Move* legal_moves , int jump_flag );
+int find_moves_black( Position* position , Move* legal_moves , int jump_flag );
+
+/** Briskei oles tis nees katastaseis apo tis kinhseis sto pinaka move_array. Tis bazei ston pinaka new_positions. */
+void do_moves_and_reorder( Position* restrict position , Position* new_positions , Move* move_array , int moves_num , int jump_flag );
 
 /** Metraei posa pionia tou sugkekrimenou xrwmatos uparxoun. */
-inline int count_pieces( Position* position , char color )
+inline int count_pieces( Position* restrict position , char color )
 {
 	int num_pieces = 0;
 
@@ -67,7 +64,7 @@ inline int count_pieces( Position* position , char color )
 }
 
 /** Elenxei an uparxei dunato pidima. */
-inline int jump_possible ( Position* position )
+inline int jump_possible ( Position* restrict position )
 {
     for( int i = 0; i < BOARD_ROWS; i++ )
         for( int j = 0; j < BOARD_COLUMNS; j++ )
@@ -79,7 +76,7 @@ inline int jump_possible ( Position* position )
 }
 
 /** Epistefei thn kateu8unsh tou paixth pou paizei. +-1 */
-inline int player_direction( Position* pos )
+inline int player_direction( Position* restrict pos )
 {
     if( pos->turn == WHITE )		// find movement's direction
         return 1;
@@ -87,12 +84,24 @@ inline int player_direction( Position* pos )
         return -1;
 }
 
+
+// gia to reorder.
+inline int heurestic_value( Position* restrict position , int jump_flag )
+{
+	if ( position->turn = badies_color )
+		jump_flag = -jump_flag;
+    return position->score[goodies_color] - position->score[badies_color] + position->dead[badies_color] - position->dead[goodies_color] + jump_flag;
+}
+
+// gia thn qsort ths reorder
+int comparitor( const void * lhs , const void * rhs );
+
 /**********************************************************/
 /********************** Data movers ***********************/
 /**********************************************************/
 
 /** Copy source Move to target Move. */
-inline void copy_move( Move* source , Move* target )
+inline void copy_move( Move* restrict source , Move* restrict target )
 {
 	for (int i = 0 ; i < 2 ; i++ )
 		for (int j = 0 ; j < MAXIMUM_MOVE_SIZE ; j++ )
@@ -102,7 +111,7 @@ inline void copy_move( Move* source , Move* target )
 }
 
 /** Copy source Position to target Position. */
-inline void copy_position( Position* source , Position* target )
+inline void copy_position( Position* restrict source , Position* restrict target )
 {
 	for ( int i = 0 ; i < BOARD_ROWS ; i++ )
 		for (int j = 0 ; j < BOARD_COLUMNS ; j++ )

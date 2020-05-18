@@ -12,6 +12,7 @@ typedef struct
 	char score[ 2 ];
 	char turn;
 	int dead[2];
+	int value;
 } Position;
 
 

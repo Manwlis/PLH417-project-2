@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
-
+int moves_max = 0;
 int main( int argc, char ** argv )
 {
 	int c;
@@ -46,7 +46,9 @@ int main( int argc, char ** argv )
 	int i, j, k;
 	int jumpPossible;
 	int playerDirection;
+
 	int ants_before_move;
+	int turn = 0;
 /**********************************************************/
 
 	while( 1 )
@@ -125,7 +127,12 @@ int main( int argc, char ** argv )
 
 				gamePosition.dead[ getOtherSide(myColor) ] += ants_before_move - count_pieces( &gamePosition , getOtherSide(myColor) );
 
+				turn++;
+				printf("!!!!!! TURN: %d !!!!!!" , turn );
+
 				printf("Num legal moves: %d\n" , num_moves );
+				if( num_moves > moves_max )
+					moves_max = num_moves;
 				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
 				printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
 				printPosition( &gamePosition );
@@ -133,6 +140,7 @@ int main( int argc, char ** argv )
 				break;
 
 			case NM_QUIT:			//server wants us to quit...we shall obey
+				printf("\nMoves max: %d \n" , moves_max);
 				close( mySocket );
 				return 0;
 		}

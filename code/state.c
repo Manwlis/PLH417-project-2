@@ -10,15 +10,22 @@
 
 void minimax_decision( Position* position , Move* move )
 {
-    
     int value;
     int best_move_value = INT_MIN;
 
     Position new_position;
 
+    // elenxos pidimatos
+    int jump_flag = jump_possible( position );
+
     // briskei nomimes kiniseis
     Move legal_moves[MAX_LEGAL_MOVES];
-    int legal_moves_num = find_moves( position , legal_moves );
+    int legal_moves_num;
+    if( goodies_color == WHITE )
+        legal_moves_num = find_moves_white( position , legal_moves , jump_flag );
+    else
+        legal_moves_num = find_moves_black( position , legal_moves , jump_flag );
+    
     int ants_before_move = count_pieces( position , badies_color );
 
     num_moves = legal_moves_num;
@@ -48,8 +55,11 @@ int max_value ( Position position , int depth , int a , int b  )
     depth++;
     max_num++;
 
-    if ( terminal_test( &position , depth ) == TRUE )
-        return utility( &position );
+    // elenxos pidimatos
+    int jump_flag = jump_possible( &position );
+
+    if ( terminal_test( &position , depth , jump_flag ) == TRUE )
+        return utility( &position , jump_flag );
 
     // den uparxei dia8esimh kinhsh
     if( !canMove( &position , position.turn ) )
@@ -66,45 +76,75 @@ int max_value ( Position position , int depth , int a , int b  )
     int value;
     int best_move_value = INT_MIN;
 
-    Position new_position;
-
     // briskei nomimes kiniseis
     Move legal_moves[MAX_LEGAL_MOVES];
-    int legal_moves_num = find_moves( &position , legal_moves );
+    int legal_moves_num;
+    if( goodies_color == WHITE )
+        legal_moves_num = find_moves_white( &position , legal_moves , jump_flag );
+    else
+        legal_moves_num = find_moves_black( &position , legal_moves , jump_flag );
+
     int ants_before_move = count_pieces( &position , badies_color );
 
-    // eksereunhsh kinisewn
-    for( int i = 0 ; i < legal_moves_num ; i++)
+    if( MOVE_REORDER_ACTIVE == TRUE )
     {
-        // kanei kinish
-        copy_position( &position , &new_position ); 
-        doMove2( &new_position , &(legal_moves[i]) );
+        // kanei kiniseis kai reorder ta apotelesmata tous
+        Position new_positions[legal_moves_num];
+        do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num , jump_flag );
 
-        // tracking nekra
-        new_position.dead[ badies_color ] += ants_before_move - count_pieces( &new_position , badies_color );
+        // eksereunhsh kinisewn
+        for( int i = 0 ; i < legal_moves_num ; i++)
+        {
+            // tracking nekra
+            new_positions[i].dead[ badies_color ] += ants_before_move - count_pieces( &(new_positions[i]) , badies_color );
 
-        // minimax
-        int value = min_value( new_position , depth , a , b );
-        if( best_move_value < value )
-            best_move_value = value;
+            // minimax
+            int value = min_value( new_positions[i] , depth , a , b );
+            best_move_value = best_move_value < value ? value : best_move_value;
 
-        // a-b prunning
-        if( A_B_PRUNING_ACTIVE == TRUE && best_move_value >= b ) // kladema bash b
-            return best_move_value;
-        a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+            // a-b prunning
+            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value >= b ) // kladema bash b
+                return best_move_value;
+            a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+        }
     }
+    else
+    {   // den xreiazetai pinaka apo kiniseis an den kanei reorder
+        Position new_position;
+        // eksereunhsh kinisewn
+        for( int i = 0 ; i < legal_moves_num ; i++)
+        {
+            // kanei kinish
+            copy_position( &position , &new_position ); 
+            doMove2( &new_position , &(legal_moves[i]) );
+
+            // tracking nekra
+            new_position.dead[ badies_color ] += ants_before_move - count_pieces( &new_position , badies_color );
+
+            // minimax
+            int value = min_value( new_position , depth , a , b );
+            best_move_value = best_move_value < value ? value : best_move_value;
+
+            // a-b prunning
+            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value >= b ) // kladema bash b
+                return best_move_value;
+            a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+        }
+    }    
     return best_move_value;
 }
 
-/* Idia ilopoihsh me to max_value, me monh diafora best_value = INT_MAX kai psaxnw mikrotero */
 int min_value ( Position position , int depth , int a , int b  )
 {
     // stats
     depth++;
     min_num++;
 
-    if ( terminal_test( &position , depth ) == TRUE )
-        return utility( &position );
+    // elenxos pidimatos
+    int jump_flag = jump_possible( &position );
+
+    if ( terminal_test( &position , depth , jump_flag ) == TRUE )
+        return utility( &position , jump_flag );
 
     // den uparxei dia8esimh kinhsh
     if( !canMove( &position , position.turn ) )
@@ -121,44 +161,82 @@ int min_value ( Position position , int depth , int a , int b  )
     int value;
     int best_move_value = INT_MAX;
 
-    Position new_position;
-
     // briskei nomimes kiniseis
     Move legal_moves[MAX_LEGAL_MOVES];
-    int legal_moves_num = find_moves( &position , legal_moves );
+    int legal_moves_num;
+    if( goodies_color == WHITE )
+        legal_moves_num = find_moves_white( &position , legal_moves , jump_flag );
+    else
+        legal_moves_num = find_moves_black( &position , legal_moves , jump_flag );
+
     int ants_before_move = count_pieces( &position , goodies_color );
 
-    // eksereunhsh kinisewn
-    for( int i = 0 ; i < legal_moves_num ; i++)
+    if( MOVE_REORDER_ACTIVE == TRUE )
     {
-        // kanei kinish
-        copy_position( &position , &new_position ); 
-        doMove2( &new_position , &(legal_moves[i]) );
+        // kanei kiniseis kai reorder ta apotelesmata tous
+        Position new_positions[legal_moves_num];
+        do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num , jump_flag );
 
-        // tracking nekra
-        new_position.dead[ goodies_color ] += ants_before_move - count_pieces( &new_position , goodies_color );
+        // eksereunhsh kinisewn anapoda logo sort tou reorder.
+        for( int i = 0 ; i < legal_moves_num ; i++)
+        {
+            // tracking nekra
+            new_positions[i].dead[ goodies_color ] += ants_before_move - count_pieces( &(new_positions[i]) , goodies_color );
 
-        // minimax
-        int value = max_value( new_position , depth , a , b );
-        best_move_value = best_move_value > value ? value : best_move_value;
+            // minimax
+            int value = max_value( new_positions[i] , depth , a , b );
+            best_move_value = best_move_value > value ? value : best_move_value;
 
-        // a-b prunning
-        if( A_B_PRUNING_ACTIVE == TRUE && best_move_value <= a ) // kladema bash a
-            return best_move_value;
-        b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+            // a-b prunning
+            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value <= a ) // kladema bash a
+                return best_move_value;
+            b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+        }
+    }
+    else
+    {   // den xreiazetai pinaka apo kiniseis an den kanei reorder
+        Position new_position;
+        // eksereunhsh kinisewn anapoda logo sort tou reorder.
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
+        {
+            // kanei kinish
+            copy_position( &position , &new_position ); 
+            doMove2( &new_position , &(legal_moves[i]) );
+
+            // tracking nekra
+            new_position.dead[ goodies_color ] += ants_before_move - count_pieces( &new_position , goodies_color );
+
+            // minimax
+            int value = max_value( new_position , depth , a , b );
+            best_move_value = best_move_value > value ? value : best_move_value;
+
+            // a-b prunning
+            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value <= a ) // kladema bash a
+                return best_move_value;
+            b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+        }
     }
     return best_move_value;
 }
 
-int terminal_test( Position* position , int depth )
+int terminal_test( Position* position , int depth , int jump_flag )
 {
-    if ( depth == SEARCH_DEPTH )
-        return TRUE;
-    // isws an den exei mirmigia kapios?
-    // an ola ta mirmigia mou einai pera apo tou allou
+    // den afhnw na stamathsei an exei pidima gia na meiw8ei horizon effect
+    if ( depth >= SEARCH_DEPTH )
+    {
+        if( NO_STOP_AT_VOLATILE == TRUE && jump_flag == TRUE )
+        {
+            ; // sunexizei
+        }
+        else
+        {
+            return TRUE;
+        }
+    }
+
+    // statistika gia to position
     int ants[2] = { 0 , 0 };
     int food_remaining = 0;
-
     int upsulotero_grammh_aspro = -1;
     int xamhloterh_grammh_mauro = 12;
 
@@ -211,10 +289,10 @@ int terminal_test( Position* position , int depth )
     return FALSE;
 }
 
-// score , murmugkia, fai
-int weigth[3] = { 10 , 15 , 5 };
+// score , murmugkia, fai , jump
+const int weigth[4] = { 10 , 15 , 5 , 8 };
 
-int utility( Position* position )
+int utility( Position* position , int jump_flag )
 {
     int ants[2] = { 0 , 0 };
     int food_remaining = 0;
@@ -233,18 +311,28 @@ int utility( Position* position )
     int my_food = position->score[ goodies_color ] - ( NUM_ANTS - ants[ goodies_color ] - position->dead[ goodies_color ] );
     int enemy_food = position->score[ badies_color ] - ( NUM_ANTS - ants[ badies_color ] - position->dead[ badies_color ] );
 
-
     // afou dn kserw an to fai edwse pragmati ponto, tou dinw miso baros. An diwr8w8ei, mono gia ta fagomena sto mellon.
 	int my_value = ( position->score[ goodies_color ] - my_food ) * weigth[0]; 
     int enemy_value = ( position->score[ badies_color ] - enemy_food)* weigth[0];
 
+    // zwntana murugkia
     my_value += ants[ goodies_color ] * weigth[1];
     enemy_value += ants[ badies_color ] * weigth[1];
 
+    // fai
     my_value += my_food * weigth[2];
     enemy_value += enemy_food * weigth[2];
 
-    return my_value - enemy_value ;
+    // gia na meiw8ei to horizon effect
+    int jump_value = 0;
+    if( jump_flag == TRUE )
+    {
+        jump_value = weigth[3];
+        if(position->turn == badies_color)
+            jump_value = - jump_value;
+    }
+
+    return my_value - enemy_value + jump_value;
 }
 
 
@@ -252,10 +340,8 @@ int utility( Position* position )
 /******************** Utility methods *********************/
 /**********************************************************/
 
-int find_moves( Position* position , Move* legal_moves )
+int find_moves_white( Position* position , Move* legal_moves , int jump_flag )
 {
-    // elenxos pidimatos
-    int jump_flag = jump_possible( position );
     // kateu8unsh paixth
     int column_direction = player_direction( position );
 
@@ -264,6 +350,17 @@ int find_moves( Position* position , Move* legal_moves )
     Move temp_move;
     temp_move.color = position->turn;
 
+    // int i = 0;
+    // int j = 0;
+    // int i_limit = BOARD_ROWS;
+    // int j_limit = BOARD_COLUMNS;
+    // if( goodies_color == BLACK )
+    // {
+    //     i = BOARD_ROWS - 1;
+    //     j = BOARD_COLUMNS - 1;
+// 299059 , 1437705
+// 587273 , 3059697
+    // }
     for( int i = 0; i < BOARD_ROWS; i++ )
     {
         for( int j = 0; j < BOARD_COLUMNS; j++ )
@@ -370,4 +467,142 @@ int find_moves( Position* position , Move* legal_moves )
         }
     }
     return legal_moves_num;
+}
+
+int find_moves_black( Position* position , Move* legal_moves , int jump_flag )
+{
+    // kateu8unsh paixth
+    int column_direction = player_direction( position );
+
+    int legal_moves_num = 0;
+
+    Move temp_move;
+    temp_move.color = position->turn;
+
+    for( int i = BOARD_ROWS; i >= 0; i-- )
+    {
+        for( int j = BOARD_COLUMNS; j >= 0; j-- )
+        {
+            if( position->board[ i ][ j ] == position->turn ) // diko tou pioni
+            {
+                //piece we are going to move
+                temp_move.tile[ 0 ][ 0 ] = i;
+                temp_move.tile[ 1 ][ 0 ] = j;
+
+                /******** jump not possible ********/
+                if ( jump_flag == FALSE )
+                {
+                    temp_move.tile[ 0 ][ 1 ] = i + 1 * column_direction ;
+                    temp_move.tile[ 0 ][ 2 ] = -1; // mia kinish an den uparxei pidima
+
+                    // kinish aristera
+                    temp_move.tile[ 1 ][ 1 ] = j - 1;
+                    if( isLegal( position , &temp_move ))
+                    {
+                        copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                        legal_moves_num++;
+                    }
+                    // kinish deksia
+                    temp_move.tile[ 1 ][ 1 ] = j + 1;
+                    if( isLegal( position , &temp_move ))
+                    {
+                        copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                        legal_moves_num++;
+                    }        
+                }
+                /******** Jump possible ********/
+                else if ( canJump( i , j , position->turn , position ) )
+                {
+                    temp_move.tile[0][1] = temp_move.tile[0][0] + 2 * column_direction;
+                    for ( int row_direction1 = -2 ; row_direction1 <= 2 ; row_direction1 += 4)
+                    {
+                        temp_move.tile[1][1] = temp_move.tile[1][0] + row_direction1;
+                        temp_move.tile[0][2] = -1;
+                        
+                        if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                        {
+                            copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                            legal_moves_num++;
+                        }
+                        else // exei kai allo
+                        {
+                            temp_move.tile[0][2] = temp_move.tile[ 0 ][ 1 ] + 2 * column_direction;
+                            for ( int row_direction2 = -2 ; row_direction2 <= 2 ; row_direction2 += 4)
+                            {
+                                temp_move.tile[1][2] = temp_move.tile[1][1] + row_direction2;
+                                temp_move.tile[0][3] = -1;
+                                if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                {
+                                    copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                                    legal_moves_num++;
+                                }
+                                else
+                                {
+                                    temp_move.tile[0][3] = temp_move.tile[ 0 ][ 2 ] + 2 * column_direction;
+                                    for ( int row_direction3 = -2 ; row_direction3 <= 2 ; row_direction3 += 4)
+                                    {
+                                        temp_move.tile[1][3] = temp_move.tile[1][2] + row_direction3;
+                                        temp_move.tile[0][4] = -1;
+                                        if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                        {
+                                            copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                                            legal_moves_num++;
+                                        }
+                                        else
+                                        {
+                                            temp_move.tile[0][4] = temp_move.tile[ 0 ][ 3 ] + 2 * column_direction;
+                                            for ( int row_direction4 = -2 ; row_direction4 <= 2 ; row_direction4 += 4)
+                                            {
+                                                temp_move.tile[1][4] = temp_move.tile[1][3] + row_direction4;
+                                                temp_move.tile[0][5] = -1;
+                                                if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                {
+                                                    copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                                                    legal_moves_num++;
+                                                }
+                                                else
+                                                {
+                                                    temp_move.tile[0][5] = temp_move.tile[ 0 ][ 4 ] + 2 * column_direction;
+                                                    for ( int row_direction5 = -2 ; row_direction5 <= 2 ; row_direction5 += 4)
+                                                    {
+                                                        temp_move.tile[1][5] = temp_move.tile[1][4] + row_direction5;
+                                                        if( isLegal( position , &temp_move )) // an einai legal den uparxei allo pidima
+                                                        {
+                                                            copy_move( &temp_move , &(legal_moves[ legal_moves_num ]) );
+                                                            legal_moves_num++;
+                                                        }
+                                                    } // 5 jump
+                                                }
+                                            } // 4 jump
+                                        }
+                                    } // 3 jump
+                                }
+                            } // 2 jump
+                        }
+                    } // 1 jump
+                }
+            }
+        }
+    }
+    return legal_moves_num;
+}
+
+void do_moves_and_reorder( Position* position , Position* new_positions , Move* move_array , int moves_num , int jump_flag )
+{
+    // kanei oles tis kiniseis
+    for( int i = 0 ; i < moves_num ; i++)
+    {
+        copy_position( position , &(new_positions[i]) );
+        doMove2( &(new_positions[i]) , &(move_array[i]) );
+    }
+    // briskei values
+    for( int i = 0 ; i < moves_num ; i++)
+        new_positions[i].value = heurestic_value( &(new_positions[i]) , jump_flag );
+    // sort bash values
+    qsort( new_positions , moves_num , sizeof(Position) , comparitor );
+}
+
+int comparitor( const void * lhs , const void * rhs )
+{
+    return ( ( (Position*) lhs )->value - ( (Position*) rhs )->value );
 }
