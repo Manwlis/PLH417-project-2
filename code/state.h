@@ -30,9 +30,9 @@ int max_num;
 
 void minimax_decision( Position* position , Move* move );
 
-int max_value ( Position position , int depth , int a , int b );
+int max_value( Position position , int depth , int a , int b );
 
-int min_value ( Position position , int depth , int a , int b  );
+int min_value( Position position , int depth , int a , int b );
 
 int terminal_test( Position* position , int depth , int jump_flag );
 
@@ -48,22 +48,20 @@ int find_moves_white( Position* position , Move* legal_moves , int jump_flag );
 int find_moves_black( Position* position , Move* legal_moves , int jump_flag );
 
 /** Briskei oles tis nees katastaseis apo tis kinhseis sto pinaka move_array. Tis bazei ston pinaka new_positions. */
-void do_moves_and_reorder( Position* restrict position , Position* new_positions , Move* move_array , int moves_num , int jump_flag );
+void do_moves_and_reorder( Position* restrict position , Position* new_positions , Move* move_array , int moves_num );
 
 /** Metraei posa pionia tou sugkekrimenou xrwmatos uparxoun. */
 inline int count_pieces( Position* restrict position , char color )
 {
 	int num_pieces = 0;
-
 	for( int i = 0; i < BOARD_ROWS; i++ )
 		for( int j = 0; j < BOARD_COLUMNS; j++ )
 			if( position->board[ i ][ j ] == color )
 				num_pieces++;
-
 	return num_pieces;
 }
 
-/** Elenxei an uparxei dunato pidima. */
+/** Elenxei an uparxei dunato pidima gia auton pou paizei. */
 inline int jump_possible ( Position* restrict position )
 {
     for( int i = 0; i < BOARD_ROWS; i++ )
@@ -71,7 +69,6 @@ inline int jump_possible ( Position* restrict position )
             if( position->board[ i ][ j ] == position->turn ) // autounou pou paizei
                 if( canJump( i , j , position->turn , position ) )
                     return TRUE;
-    
     return FALSE;
 }
 
@@ -84,17 +81,20 @@ inline int player_direction( Position* restrict pos )
         return -1;
 }
 
-
-// gia to reorder.
+// gia to reorder. // TO_DO: na to dw perissotero einai skoupidi
 inline int heurestic_value( Position* restrict position , int jump_flag )
 {
-	if ( position->turn = badies_color )
-		jump_flag = -jump_flag;
-    return position->score[goodies_color] - position->score[badies_color] + position->dead[badies_color] - position->dead[goodies_color] + jump_flag;
+	// if ( position->turn = badies_color )
+	// 	jump_flag = -jump_flag;
+    // return ( position->score[goodies_color] - position->dead_diff[goodies_color] )
+	// 	 - ( position->score[badies_color] - position->dead_diff[badies_color] )
+	// 	 + jump_flag; // TO-DO: zwntana h fai
+	return utility( position , jump_flag );
 }
 
-// gia thn qsort ths reorder
+// gia thn qsort ths reorder.
 int comparitor( const void * lhs , const void * rhs );
+
 
 /**********************************************************/
 /********************** Data movers ***********************/
@@ -117,12 +117,15 @@ inline void copy_position( Position* restrict source , Position* restrict target
 		for (int j = 0 ; j < BOARD_COLUMNS ; j++ )
 			target->board[i][j] = source->board[i][j];
 
-	target->score[0] = source->score[0];
-	target->score[1] = source->score[1];
+	target->score[BLACK] = source->score[BLACK];
+	target->score[WHITE] = source->score[WHITE];
 	target->turn = source->turn;
 
-    target->dead[0] = source->dead[0];
-    target->dead[1] = source->dead[1];
+    target->food_diff[BLACK] = source->food_diff[BLACK];
+    target->food_diff[WHITE] = source->food_diff[WHITE];
+
+	target->dead_diff[BLACK] = source->dead_diff[BLACK];
+	target->dead_diff[WHITE] = source->dead_diff[WHITE];
 }
 
 #endif

@@ -26,9 +26,12 @@ void minimax_decision( Position* position , Move* move )
     else
         legal_moves_num = find_moves_black( position , legal_moves , jump_flag );
     
-    int ants_before_move = count_pieces( position , badies_color );
+    // init stats
+    position->food_diff[0] = 0;
+    position->food_diff[1] = 0;
+    position->dead_diff[0] = 0;
+    position->dead_diff[1] = 0;
 
-    num_moves = legal_moves_num;
     // den xreiazetai na koitaksw gia ean den iparxoun dia8esimes kiniseis giati tote den ksekinaei o algori8mos
     // dokimazei oles
     for( int i = 0 ; i < legal_moves_num ; i++)
@@ -36,9 +39,6 @@ void minimax_decision( Position* position , Move* move )
         // kanei thn kinhsh
         copy_position( position , &new_position );
         doMove2( &new_position , &(legal_moves[i]) );
-
-        // tracking nekra mirmigkia
-        new_position.dead[ badies_color ] += ants_before_move - count_pieces( &new_position , badies_color );
 
         int value = min_value( new_position , 0 , INT_MIN , INT_MAX );
 
@@ -48,6 +48,7 @@ void minimax_decision( Position* position , Move* move )
             copy_move( &(legal_moves[i]) , move );
         }  
     }
+    num_moves = legal_moves_num; // track statistics
 }
 
 int max_value ( Position position , int depth , int a , int b  )
@@ -79,25 +80,20 @@ int max_value ( Position position , int depth , int a , int b  )
     // briskei nomimes kiniseis
     Move legal_moves[MAX_LEGAL_MOVES];
     int legal_moves_num;
-    if( goodies_color == WHITE )
+    if( position.turn == WHITE )
         legal_moves_num = find_moves_white( &position , legal_moves , jump_flag );
     else
         legal_moves_num = find_moves_black( &position , legal_moves , jump_flag );
-
-    int ants_before_move = count_pieces( &position , badies_color );
 
     if( MOVE_REORDER_ACTIVE == TRUE )
     {
         // kanei kiniseis kai reorder ta apotelesmata tous
         Position new_positions[legal_moves_num];
-        do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num , jump_flag );
+        do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
         // eksereunhsh kinisewn
         for( int i = 0 ; i < legal_moves_num ; i++)
         {
-            // tracking nekra
-            new_positions[i].dead[ badies_color ] += ants_before_move - count_pieces( &(new_positions[i]) , badies_color );
-
             // minimax
             int value = min_value( new_positions[i] , depth , a , b );
             best_move_value = best_move_value < value ? value : best_move_value;
@@ -117,9 +113,6 @@ int max_value ( Position position , int depth , int a , int b  )
             // kanei kinish
             copy_position( &position , &new_position ); 
             doMove2( &new_position , &(legal_moves[i]) );
-
-            // tracking nekra
-            new_position.dead[ badies_color ] += ants_before_move - count_pieces( &new_position , badies_color );
 
             // minimax
             int value = min_value( new_position , depth , a , b );
@@ -164,25 +157,20 @@ int min_value ( Position position , int depth , int a , int b  )
     // briskei nomimes kiniseis
     Move legal_moves[MAX_LEGAL_MOVES];
     int legal_moves_num;
-    if( goodies_color == WHITE )
+    if( position.turn == WHITE )
         legal_moves_num = find_moves_white( &position , legal_moves , jump_flag );
     else
         legal_moves_num = find_moves_black( &position , legal_moves , jump_flag );
-
-    int ants_before_move = count_pieces( &position , goodies_color );
 
     if( MOVE_REORDER_ACTIVE == TRUE )
     {
         // kanei kiniseis kai reorder ta apotelesmata tous
         Position new_positions[legal_moves_num];
-        do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num , jump_flag );
+        do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
         // eksereunhsh kinisewn anapoda logo sort tou reorder.
         for( int i = 0 ; i < legal_moves_num ; i++)
         {
-            // tracking nekra
-            new_positions[i].dead[ goodies_color ] += ants_before_move - count_pieces( &(new_positions[i]) , goodies_color );
-
             // minimax
             int value = max_value( new_positions[i] , depth , a , b );
             best_move_value = best_move_value > value ? value : best_move_value;
@@ -202,9 +190,6 @@ int min_value ( Position position , int depth , int a , int b  )
             // kanei kinish
             copy_position( &position , &new_position ); 
             doMove2( &new_position , &(legal_moves[i]) );
-
-            // tracking nekra
-            new_position.dead[ goodies_color ] += ants_before_move - count_pieces( &new_position , goodies_color );
 
             // minimax
             int value = max_value( new_position , depth , a , b );
@@ -268,29 +253,26 @@ int terminal_test( Position* position , int depth , int jump_flag )
         return TRUE;
 
     // efoson den gnwrizw pio fai edwse pragmati ba8mo, pairnw tis xeiroteres periptwseis.
-    // fai pou exw faei = score - pontoi apo basilises. An kapio murmhgki den zei h den exei pe8anei, einai basilisa.
-    int my_food = position->score[ goodies_color ] - ( NUM_ANTS - ants[ goodies_color ] - position->dead[ goodies_color ] );
-    int enemy_food = position->score[ badies_color ] - ( NUM_ANTS - ants[ badies_color ] - position->dead[ badies_color ] );
 
     int best_score_change = ants[ goodies_color ] + food_remaining;
     int worst_score_change = ants[ badies_color ] + food_remaining;
 
     // Den mporei na kerdisei akoma kai an ola pane teleia.
     // xeirwterh periptwsh: olo to fai mou edwse ponto kai kanena tou ex8rou
-    if( position->score[ goodies_color ] + best_score_change < position->score[ badies_color ] - enemy_food ) 
+    if( position->score[ goodies_color ] + best_score_change < position->score[ badies_color ] - position->food_diff[badies_color] ) 
         return TRUE;
     
 
     // Den mporei na xasei akoma kai an ola pane xalia
     // xeirwterh periptwsh: kanena fai mou dn edwse ponto kai dwsan ola tou ex8rou
-    if( position->score[ badies_color ] + worst_score_change < position->score[ goodies_color ] - goodies_color )
+    if( position->score[ badies_color ] + worst_score_change < position->score[ goodies_color ] - position->food_diff[goodies_color] )
         return TRUE;
     
     return FALSE;
 }
 
-// score , murmugkia, fai , jump
-const int weigth[4] = { 10 , 15 , 5 , 8 };
+// score , murmugkia , fai , jump
+const int weigth[4] = { 10 , 15 , 5 , 10 };
 
 int utility( Position* position , int jump_flag )
 {
@@ -306,22 +288,17 @@ int utility( Position* position , int jump_flag )
             food_remaining += position->board[i][j] == RTILE;
         }
     }
+    // afou dn kserw an to fai 8a dwsei ponto, tou dinw miso baros.
+	int my_value = ( position->score[ goodies_color ] - position->food_diff[ goodies_color ] ) * weigth[0]; 
+    int enemy_value = ( position->score[ badies_color ] - position->food_diff[ badies_color ] ) * weigth[0];
 
-    // opws kai sto terminal test
-    int my_food = position->score[ goodies_color ] - ( NUM_ANTS - ants[ goodies_color ] - position->dead[ goodies_color ] );
-    int enemy_food = position->score[ badies_color ] - ( NUM_ANTS - ants[ badies_color ] - position->dead[ badies_color ] );
-
-    // afou dn kserw an to fai edwse pragmati ponto, tou dinw miso baros. An diwr8w8ei, mono gia ta fagomena sto mellon.
-	int my_value = ( position->score[ goodies_color ] - my_food ) * weigth[0]; 
-    int enemy_value = ( position->score[ badies_color ] - enemy_food)* weigth[0];
-
-    // zwntana murugkia
+    // zwntana mirmigkia
     my_value += ants[ goodies_color ] * weigth[1];
     enemy_value += ants[ badies_color ] * weigth[1];
 
     // fai
-    my_value += my_food * weigth[2];
-    enemy_value += enemy_food * weigth[2];
+    my_value += position->food_diff[goodies_color] * weigth[2];
+    enemy_value += position->food_diff[badies_color] * weigth[2];
 
     // gia na meiw8ei to horizon effect
     int jump_value = 0;
@@ -329,7 +306,7 @@ int utility( Position* position , int jump_flag )
     {
         jump_value = weigth[3];
         if(position->turn == badies_color)
-            jump_value = - jump_value;
+            jump_value = -jump_value;
     }
 
     return my_value - enemy_value + jump_value;
@@ -350,17 +327,6 @@ int find_moves_white( Position* position , Move* legal_moves , int jump_flag )
     Move temp_move;
     temp_move.color = position->turn;
 
-    // int i = 0;
-    // int j = 0;
-    // int i_limit = BOARD_ROWS;
-    // int j_limit = BOARD_COLUMNS;
-    // if( goodies_color == BLACK )
-    // {
-    //     i = BOARD_ROWS - 1;
-    //     j = BOARD_COLUMNS - 1;
-// 299059 , 1437705
-// 587273 , 3059697
-    // }
     for( int i = 0; i < BOARD_ROWS; i++ )
     {
         for( int j = 0; j < BOARD_COLUMNS; j++ )
@@ -479,7 +445,7 @@ int find_moves_black( Position* position , Move* legal_moves , int jump_flag )
     Move temp_move;
     temp_move.color = position->turn;
 
-    for( int i = BOARD_ROWS; i >= 0; i-- )
+    for( int i = BOARD_ROWS; i >= 0; i-- ) // ksekinaw apo ta pisw. Exoun perissoteres pi8anothtes na bgaloun kati kalo
     {
         for( int j = BOARD_COLUMNS; j >= 0; j-- )
         {
@@ -587,7 +553,7 @@ int find_moves_black( Position* position , Move* legal_moves , int jump_flag )
     return legal_moves_num;
 }
 
-void do_moves_and_reorder( Position* position , Position* new_positions , Move* move_array , int moves_num , int jump_flag )
+void do_moves_and_reorder( Position* position , Position* new_positions , Move* move_array , int moves_num )
 {
     // kanei oles tis kiniseis
     for( int i = 0 ; i < moves_num ; i++)
@@ -597,12 +563,12 @@ void do_moves_and_reorder( Position* position , Position* new_positions , Move* 
     }
     // briskei values
     for( int i = 0 ; i < moves_num ; i++)
-        new_positions[i].value = heurestic_value( &(new_positions[i]) , jump_flag );
+        new_positions[i].heurestic_value = heurestic_value( &(new_positions[i]) , jump_possible( &(new_positions[i]) ) );
     // sort bash values
     qsort( new_positions , moves_num , sizeof(Position) , comparitor );
 }
 
 int comparitor( const void * lhs , const void * rhs )
 {
-    return ( ( (Position*) lhs )->value - ( (Position*) rhs )->value );
+    return ( ( (Position*) lhs )->heurestic_value - ( (Position*) rhs )->heurestic_value );
 }

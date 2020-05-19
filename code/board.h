@@ -11,8 +11,10 @@ typedef struct
 	char board[ BOARD_ROWS ][ BOARD_COLUMNS ];
 	char score[ 2 ];
 	char turn;
-	int dead[2];
-	int value;
+
+	int dead_diff[2];	// posa pe8ainoun kata thn leitourgia tou algori8mou
+	int food_diff[2];	// posa faghta trwei o ka8enas kata thn leitourgia tou algori8mou
+	int heurestic_value; // gia to apotelesma ths euretikhs sunarthshs
 } Position;
 
 
@@ -31,7 +33,7 @@ void printPosition( Position * pos );
 //Caution!!! does not check if it is legal! Simply does the move!
 void doMove( Position * pos, Move * moveToDo );
 
-// kanei to idio me thn doMove alla dinei panta pontous to fai
+// kanei to idio me thn doMove alla dinei panta pontous to fai. Epishs 8umatai posa 
 void doMove2( Position * pos, Move * moveToDo );
 
 // returns 1 if we can jump to the left 2 if we can jump to the right 3 if we can jump both directions and 0 if no jump is possible

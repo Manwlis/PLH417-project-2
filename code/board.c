@@ -215,6 +215,7 @@ void doMove2( Position * pos, Move * moveToDo )
 			stepI = ( moveToDo->tile[ 0 ][ intex ] - moveToDo->tile[ 0 ][ intex - 1 ] ) / 2;
 			stepJ = ( moveToDo->tile[ 1 ][ intex ] - moveToDo->tile[ 1 ][ intex - 1 ] ) / 2;
 
+			pos->dead_diff[ getOtherSide( moveToDo->color ) ]++; // krataw posa nekra exei
 			pos->board[ moveToDo->tile[ 0 ][ intex - 1 ] + stepI ][ moveToDo->tile[ 1 ][ intex - 1 ] + stepJ ] = EMPTY;	//remove the captured piece
 		}
 		// Tile with food?
@@ -222,10 +223,13 @@ void doMove2( Position * pos, Move * moveToDo )
 			// Probability 1/2
 			
 			/********Eblgala to rand *******/
-				if(moveToDo->color==BLACK){
+				if( moveToDo->color == BLACK )
+				{
+					pos->food_diff[BLACK]++;	// metraei posa faghta pisteuei oti 8a faei
 					pos->score[ BLACK ]++;	//Black scored (food)!
 				}
-				else if(moveToDo->color==WHITE){
+				else if( moveToDo->color == WHITE ){
+					pos->food_diff[WHITE]++;
 					pos->score[ WHITE ]++; //White scored (food)!
 				}
 			/*******************************/	
@@ -246,6 +250,7 @@ void doMove2( Position * pos, Move * moveToDo )
 	/*change turn*/
 	pos->turn = getOtherSide( pos->turn );
 }
+
 /**********************************************************/
 int canJump( char row, char col, char player, Position * pos )
 {

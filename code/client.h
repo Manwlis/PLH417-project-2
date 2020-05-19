@@ -10,7 +10,6 @@
 /**********************************************************/
 Position gamePosition;		// Position we are going to use
 
-Move moveReceived;			// temporary move to retrieve opponent's choice
 Move myMove;				// move to save our choice and send it to the server
 
 char myColor;				// to store our color
