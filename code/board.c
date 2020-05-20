@@ -215,7 +215,8 @@ void doMove2( Position * pos, Move * moveToDo )
 			stepI = ( moveToDo->tile[ 0 ][ intex ] - moveToDo->tile[ 0 ][ intex - 1 ] ) / 2;
 			stepJ = ( moveToDo->tile[ 1 ][ intex ] - moveToDo->tile[ 1 ][ intex - 1 ] ) / 2;
 
-			pos->dead_diff[ getOtherSide( moveToDo->color ) ]++; // krataw posa nekra exei
+			pos->dead_diff[ getOtherSide( moveToDo->color ) ]++;	// krataw posa nekra exei
+			pos->ants[ getOtherSide( moveToDo->color ) ]--;			// krataw ta zwntana
 			pos->board[ moveToDo->tile[ 0 ][ intex - 1 ] + stepI ][ moveToDo->tile[ 1 ][ intex - 1 ] + stepJ ] = EMPTY;	//remove the captured piece
 		}
 		// Tile with food?
@@ -236,9 +237,15 @@ void doMove2( Position * pos, Move * moveToDo )
 
 		}
 		if( moveToDo->tile[ 0 ][ intex ] == 0 )
+		{
 			pos->score[ BLACK ]++;	//Black scored!
+			pos->ants[ BLACK ]--;
+		}
 		else if( moveToDo->tile[ 0 ][ intex ] == BOARD_ROWS-1 )
+		{
 			pos->score[ WHITE ]++;	//White scored!
+			pos->ants[ WHITE ]--;
+		}
 		else
 			pos->board[ moveToDo->tile[ 0 ][ intex ] ][ moveToDo->tile[ 1 ][ intex ] ] = moveToDo->color;	//place piece
 

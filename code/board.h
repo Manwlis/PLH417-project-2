@@ -12,9 +12,10 @@ typedef struct
 	char score[ 2 ];
 	char turn;
 
-	int dead_diff[2];	// posa pe8ainoun kata thn leitourgia tou algori8mou
-	int food_diff[2];	// posa faghta trwei o ka8enas kata thn leitourgia tou algori8mou
-	int heurestic_value; // gia to apotelesma ths euretikhs sunarthshs
+	int ants[2];			// posa murmigkia uparxoun
+	int dead_diff[2];		// posa pe8ainoun kata thn leitourgia tou algori8mou
+	int food_diff[2];		// posa faghta trwei o ka8enas kata thn leitourgia tou algori8mou
+	int heurestic_value;	// gia to apotelesma ths euretikhs sunarthshs
 } Position;
 
 

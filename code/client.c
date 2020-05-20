@@ -4,6 +4,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <sys/time.h>
 
 int moves_max = 0;
 
@@ -50,6 +51,7 @@ int main( int argc, char ** argv )
 
 	int ants_before_move;
 	int turn = 0;
+	struct timeval  tv1, tv2;
 /**********************************************************/
 
 	while( 1 )
@@ -84,11 +86,14 @@ int main( int argc, char ** argv )
 
 			case NM_REQUEST_MOVE:		//server requests our move
 			
+				gettimeofday(&tv1, NULL);
+
 				myMove.color = myColor;
 				
 				num_moves = 0;
 				min_num = 0;
 				max_num = 0;
+				max_depth = 0;
 
 				if( !canMove( &gamePosition, myColor ) )
 				{
@@ -100,7 +105,7 @@ int main( int argc, char ** argv )
 				}
 // TO_DO: na dokimasw xeirokinita dead_diff kai food_diff
 
-
+				gettimeofday(&tv2, NULL);
 
 				sendMove( &myMove, mySocket );			//send our move
 				// to krataw gia thn ektupwsh. otan steilei o server to neo position, 8a dei o client ta pragmatika apotelesmata
@@ -115,8 +120,12 @@ int main( int argc, char ** argv )
 				printf("!!!!!! TURN: %d !!!!!! ---------------------------------------\n" , turn );
 				printPosition( &gamePosition );
 				printf("Num legal moves: %d\n" , num_moves );
+				printf("Max depth: %d\n" , max_depth);
 				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
 				printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
+				printf ("Total time = %f seconds\n",
+						(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+						(double) (tv2.tv_sec - tv1.tv_sec));
 				printf("--------------------------------------------------------------\n" );
 				break;
 

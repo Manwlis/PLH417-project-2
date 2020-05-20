@@ -8,7 +8,7 @@
 #define SEARCH_DEPTH 10
 #define A_B_PRUNING_ACTIVE 1
 #define MOVE_REORDER_ACTIVE 1
-#define NO_STOP_AT_VOLATILE 1
+#define NO_STOP_AT_VOLATILE 0
 #define MAX_LEGAL_MOVES 25
 
 /** Ws state, 8ewrw ena stigmaiothpo tou board meta apo ka8e kinish.
@@ -20,10 +20,42 @@ char goodies_color;
 char badies_color;
 
 int num_moves;
+int max_depth;
 int min_num;
 int max_num;
 
+// reorder
+// max: kanonika	34,015,717
+// min: anapoda		 3,775,159
 
+// reorder
+// max: kanonika	24,937,855
+// min: kanonika	 7,833,638
+
+// reorder
+// max: anapoda		 1,733,514
+// min: anapoda		   290,198	
+
+// reorder
+// max: anapoda		 4,968,294
+// min: kanonika	 1,052,523
+
+
+// a-b
+// max: kanonika	 1,143,091
+// min: anapoda		   254,141
+
+// a-b
+// max: kanonika	 2,164,634
+// min: kanonika	   435,035
+
+// a-b
+// max: anapoda		 1,643,433
+// min: anapoda		   342,777
+
+// a-b
+// max: anapoda		 1,389,638
+// min: kanonika	   275,383
 /**********************************************************/
 /******************** Minimax methods *********************/
 /**********************************************************/
@@ -126,6 +158,9 @@ inline void copy_position( Position* restrict source , Position* restrict target
 
 	target->dead_diff[BLACK] = source->dead_diff[BLACK];
 	target->dead_diff[WHITE] = source->dead_diff[WHITE];
+
+	target->ants[BLACK] = source->ants[BLACK];
+	target->ants[WHITE] = source->ants[WHITE];
 }
 
 #endif

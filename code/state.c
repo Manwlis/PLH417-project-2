@@ -27,6 +27,8 @@ void minimax_decision( Position* position , Move* move )
         legal_moves_num = find_moves_black( position , legal_moves , jump_flag );
     
     // init stats
+    position->ants[WHITE] = count_pieces( position , WHITE );
+    position->ants[BLACK] = count_pieces( position , BLACK );
     position->food_diff[0] = 0;
     position->food_diff[1] = 0;
     position->dead_diff[0] = 0;
@@ -92,7 +94,7 @@ int max_value ( Position position , int depth , int a , int b  )
         do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
         // eksereunhsh kinisewn
-        for( int i = 0 ; i < legal_moves_num ; i++)
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
         {
             // minimax
             int value = min_value( new_positions[i] , depth , a , b );
@@ -184,7 +186,7 @@ int min_value ( Position position , int depth , int a , int b  )
     else
     {   // den xreiazetai pinaka apo kiniseis an den kanei reorder
         Position new_position;
-        // eksereunhsh kinisewn anapoda logo sort tou reorder.
+
         for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
         {
             // kanei kinish
@@ -206,6 +208,8 @@ int min_value ( Position position , int depth , int a , int b  )
 
 int terminal_test( Position* position , int depth , int jump_flag )
 {
+    if ( depth > max_depth)
+        max_depth = depth;
     // den afhnw na stamathsei an exei pidima gia na meiw8ei horizon effect
     if ( depth >= SEARCH_DEPTH )
     {
@@ -218,9 +222,9 @@ int terminal_test( Position* position , int depth , int jump_flag )
             return TRUE;
         }
     }
-
+    // printf("depth: %d , white: %d , black: %d\n" , depth , position->ants[WHITE] , position->ants[BLACK] );
+    // printf("score white: %d , score black: %d\n" , position->score[WHITE] , position->score[BLACK] );
     // statistika gia to position
-    int ants[2] = { 0 , 0 };
     int food_remaining = 0;
     int upsulotero_grammh_aspro = -1;
     int xamhloterh_grammh_mauro = 12;
@@ -229,8 +233,6 @@ int terminal_test( Position* position , int depth , int jump_flag )
     {
         for( int j = 0; j < BOARD_COLUMNS; j++ )
         {
-            ants[0] += position->board[i][j] == WHITE;
-            ants[1] += position->board[i][j] == BLACK;
             food_remaining += position->board[i][j] == RTILE;
 
             if ( position->board[i][j] == BLACK )
@@ -245,24 +247,22 @@ int terminal_test( Position* position , int depth , int jump_flag )
         return TRUE;
 
     // Den exei mirmigia => Den mporei na beltiwsei allo to value. Mallon reduntant giati den 8a ftasei edw pote afou dn 8a exei kiniseis.
-    if( ants[ goodies_color ] == 0 )
+    if( position->ants[ goodies_color ] == 0 )
         return TRUE;
 
     // O antipalos den exei mirmigia kai den uparxei fai => Den mporei na allaksei to value.
-    if( ants[ badies_color ] == 0 && food_remaining == 0 )
+    if( position->ants[ badies_color ] == 0 && food_remaining == 0 )
         return TRUE;
 
     // efoson den gnwrizw pio fai edwse pragmati ba8mo, pairnw tis xeiroteres periptwseis.
-
-    int best_score_change = ants[ goodies_color ] + food_remaining;
-    int worst_score_change = ants[ badies_color ] + food_remaining;
+    int best_score_change = position->ants[ goodies_color ] + food_remaining;
+    int worst_score_change = position->ants[ badies_color ] + food_remaining;
 
     // Den mporei na kerdisei akoma kai an ola pane teleia.
     // xeirwterh periptwsh: olo to fai mou edwse ponto kai kanena tou ex8rou
     if( position->score[ goodies_color ] + best_score_change < position->score[ badies_color ] - position->food_diff[badies_color] ) 
         return TRUE;
     
-
     // Den mporei na xasei akoma kai an ola pane xalia
     // xeirwterh periptwsh: kanena fai mou dn edwse ponto kai dwsan ola tou ex8rou
     if( position->score[ badies_color ] + worst_score_change < position->score[ goodies_color ] - position->food_diff[goodies_color] )
@@ -276,25 +276,13 @@ const int weigth[4] = { 10 , 15 , 5 , 10 };
 
 int utility( Position* position , int jump_flag )
 {
-    int ants[2] = { 0 , 0 };
-    int food_remaining = 0;
-
-    for( int i = 0; i < BOARD_ROWS; i++ )
-    {
-        for( int j = 0; j < BOARD_COLUMNS; j++ )
-        {
-            ants[0] += position->board[i][j] == WHITE;
-            ants[1] += position->board[i][j] == BLACK;
-            food_remaining += position->board[i][j] == RTILE;
-        }
-    }
     // afou dn kserw an to fai 8a dwsei ponto, tou dinw miso baros.
 	int my_value = ( position->score[ goodies_color ] - position->food_diff[ goodies_color ] ) * weigth[0]; 
     int enemy_value = ( position->score[ badies_color ] - position->food_diff[ badies_color ] ) * weigth[0];
 
     // zwntana mirmigkia
-    my_value += ants[ goodies_color ] * weigth[1];
-    enemy_value += ants[ badies_color ] * weigth[1];
+    my_value += position->ants[ goodies_color ] * weigth[1];
+    enemy_value += position->ants[ badies_color ] * weigth[1];
 
     // fai
     my_value += position->food_diff[goodies_color] * weigth[2];
