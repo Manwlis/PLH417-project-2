@@ -67,7 +67,7 @@ int main( int argc, char ** argv )
 
 			case NM_NEW_POSITION:		//server is trying to send us a new position
 				getPosition( &gamePosition, mySocket );
-				printPosition( &gamePosition );
+				//printPosition( &gamePosition );
 				break;
 
 			case NM_COLOR_W:			//server indorms us that we have WHITE color
@@ -108,7 +108,7 @@ int main( int argc, char ** argv )
 				gettimeofday(&tv2, NULL);
 
 				sendMove( &myMove, mySocket );			//send our move
-				// to krataw gia thn ektupwsh. otan steilei o server to neo position, 8a dei o client ta pragmatika apotelesmata
+				// to krataw gia thn ektupwsh. otan steilei o server to neo position, 8a dei o client ta pragmatika apotelesmata.
 				doMove2( &gamePosition, &myMove );
 
 				// track stats
@@ -117,16 +117,25 @@ int main( int argc, char ** argv )
 					moves_max = num_moves;
 
 				// ektupwsh
-				printf("!!!!!! TURN: %d !!!!!! ---------------------------------------\n" , turn );
-				printPosition( &gamePosition );
-				printf("Num legal moves: %d\n" , num_moves );
-				printf("Max depth: %d\n" , max_depth);
-				printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
-				printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
-				printf ("Total time = %f seconds\n",
-						(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-						(double) (tv2.tv_sec - tv1.tv_sec));
-				printf("--------------------------------------------------------------\n" );
+				#if LOGGING
+				printf("%d %d %d %f\n" , turn , min_num , max_num ,
+					(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec));
+				fflush(stdout);
+				#else
+					printf("!!!!!! TURN: %d !!!!!! ---------------------------------------\n" , turn );
+					printPosition( &gamePosition );
+					printf("Num legal moves: %d\n" , num_moves );
+					printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
+					//printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
+					printf ("Total time = %f seconds\n",
+							(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+							(double) (tv2.tv_sec - tv1.tv_sec));
+					#if NO_STOP_AT_VOLATILE
+						printf("Max depth: %d\n" , max_depth);
+					#endif
+					printf("--------------------------------------------------------------\n" );
+				#endif
+				
 				break;
 
 			case NM_QUIT:			//server wants us to quit...we shall obey

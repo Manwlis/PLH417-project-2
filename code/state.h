@@ -5,16 +5,27 @@
 #include "board.h"
 #include "move.h"
 
-#define SEARCH_DEPTH 10
+#define LOGGING 0
+
+#define SEARCH_DEPTH 11
 #define A_B_PRUNING_ACTIVE 1
 #define MOVE_REORDER_ACTIVE 1
-#define NO_STOP_AT_VOLATILE 0
+#define NO_STOP_AT_VOLATILE 1
+#define MULTITHREDING 1
 #define MAX_LEGAL_MOVES 25
 
 /** Ws state, 8ewrw ena stigmaiothpo tou board meta apo ka8e kinish.
  * Den xreiazomai parapanw plhroforia apo to Position, gia auto den uparxei struct state.
  * Gia na dhmiourgh8ei nea katastash (neo Position) ginetai pass by value.
  */
+
+// plhroforia ka8e thread kata thn parallhlopoihsh ths anazhthshs.
+typedef struct
+{
+    Position position;
+    int value;
+    
+} Thread_data;
 
 char goodies_color;
 char badies_color;
@@ -24,38 +35,7 @@ int max_depth;
 int min_num;
 int max_num;
 
-// reorder
-// max: kanonika	34,015,717
-// min: anapoda		 3,775,159
 
-// reorder
-// max: kanonika	24,937,855
-// min: kanonika	 7,833,638
-
-// reorder
-// max: anapoda		 1,733,514
-// min: anapoda		   290,198	
-
-// reorder
-// max: anapoda		 4,968,294
-// min: kanonika	 1,052,523
-
-
-// a-b
-// max: kanonika	 1,143,091
-// min: anapoda		   254,141
-
-// a-b
-// max: kanonika	 2,164,634
-// min: kanonika	   435,035
-
-// a-b
-// max: anapoda		 1,643,433
-// min: anapoda		   342,777
-
-// a-b
-// max: anapoda		 1,389,638
-// min: kanonika	   275,383
 /**********************************************************/
 /******************** Minimax methods *********************/
 /**********************************************************/
@@ -113,15 +93,12 @@ inline int player_direction( Position* restrict pos )
         return -1;
 }
 
-// gia to reorder. // TO_DO: na to dw perissotero einai skoupidi
+// gia to reorder.
 inline int heurestic_value( Position* restrict position , int jump_flag )
 {
-	// if ( position->turn = badies_color )
-	// 	jump_flag = -jump_flag;
-    // return ( position->score[goodies_color] - position->dead_diff[goodies_color] )
-	// 	 - ( position->score[badies_color] - position->dead_diff[badies_color] )
-	// 	 + jump_flag; // TO-DO: zwntana h fai
-	return utility( position , jump_flag );
+	// exei geinei h allagh gurou otan kaleitai h euretikh. Prepei na ta koitaksw anapoda
+	// posa pe8anan + posa efage - mporei na pidiksei o antipalos
+	return position->dead_diff[ position->turn ] * 2 + position->food_diff[ getOtherSide(position->turn) - jump_flag * 2 ];
 }
 
 // gia thn qsort ths reorder.
@@ -162,5 +139,7 @@ inline void copy_position( Position* restrict source , Position* restrict target
 	target->ants[BLACK] = source->ants[BLACK];
 	target->ants[WHITE] = source->ants[WHITE];
 }
+
+void* thread_work( void* param );
 
 #endif

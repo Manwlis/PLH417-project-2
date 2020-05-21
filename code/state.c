@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 
 /**********************************************************/
@@ -10,11 +11,6 @@
 
 void minimax_decision( Position* position , Move* move )
 {
-    int value;
-    int best_move_value = INT_MIN;
-
-    Position new_position;
-
     // elenxos pidimatos
     int jump_flag = jump_possible( position );
 
@@ -34,29 +30,68 @@ void minimax_decision( Position* position , Move* move )
     position->dead_diff[0] = 0;
     position->dead_diff[1] = 0;
 
-    // den xreiazetai na koitaksw gia ean den iparxoun dia8esimes kiniseis giati tote den ksekinaei o algori8mos
-    // dokimazei oles
-    for( int i = 0 ; i < legal_moves_num ; i++)
+    int best_move_value = INT_MIN;
+
+    #if !MULTITHREDING
     {
-        // kanei thn kinhsh
-        copy_position( position , &new_position );
-        doMove2( &new_position , &(legal_moves[i]) );
-
-        int value = min_value( new_position , 0 , INT_MIN , INT_MAX );
-
-        if( best_move_value < value )
+        Position new_position;
+        int value;
+        // den xreiazetai na koitaksw gia ean den iparxoun dia8esimes kiniseis giati tote den ksekinaei o algori8mos
+        // dokimazei oles
+        for( int i = 0 ; i < legal_moves_num ; i++)
         {
-            best_move_value = value;
-            copy_move( &(legal_moves[i]) , move );
-        }  
+            // kanei thn kinhsh
+            copy_position( position , &new_position );
+            doMove2( &new_position , &(legal_moves[i]) );
+
+            int value = min_value( new_position , 0 , INT_MIN , INT_MAX );
+
+            if( best_move_value < value )
+            {
+                best_move_value = value;
+                copy_move( &(legal_moves[i]) , move );
+            }  
+        }
     }
+    #else
+    {
+        pthread_t threads[MAX_LEGAL_MOVES];
+        Thread_data thread_data[MAX_LEGAL_MOVES];
+        
+        for( int i = 0 ; i < legal_moves_num ; i++)
+        {
+            // proetimasia doulias threads
+            copy_position( position , &(thread_data[i].position) );
+            doMove2( &(thread_data[i].position) , &(legal_moves[i]) );
+
+            // create childs and send them to work
+            pthread_create( &(threads[i]) , NULL, thread_work , (void*) &(thread_data[i]) )  ;
+        }
+
+        for( int i = 0 ; i < legal_moves_num ; i++)
+        {
+            // wait childs
+            pthread_join(threads[i] , NULL );
+
+            if( best_move_value < thread_data[i].value )
+            {
+                best_move_value = thread_data[i].value;
+                copy_move( &(legal_moves[i]) , move );
+            }
+        }
+    }
+    #endif
+
     num_moves = legal_moves_num; // track statistics
 }
 
 int max_value ( Position position , int depth , int a , int b  )
 {
+    #if LOGGING
+    __atomic_fetch_add(&max_num, 1, __ATOMIC_SEQ_CST);
+    #endif
+
     depth++;
-    max_num++;
 
     // elenxos pidimatos
     int jump_flag = jump_possible( &position );
@@ -87,30 +122,34 @@ int max_value ( Position position , int depth , int a , int b  )
     else
         legal_moves_num = find_moves_black( &position , legal_moves , jump_flag );
 
-    if( MOVE_REORDER_ACTIVE == TRUE )
+    #if MOVE_REORDER_ACTIVE
     {
         // kanei kiniseis kai reorder ta apotelesmata tous
         Position new_positions[legal_moves_num];
         do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
-        // eksereunhsh kinisewn
-        for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
+        // eksereunhsh kinisewn. Anapoda giati h qsort tis sortarei apo thn mikroterh timh pros sthn megaluterh.
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--) /////////////////////////////////////////////////////////////////////
         {
             // minimax
             int value = min_value( new_positions[i] , depth , a , b );
             best_move_value = best_move_value < value ? value : best_move_value;
 
             // a-b prunning
-            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value >= b ) // kladema bash b
-                return best_move_value;
-            a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+            #if A_B_PRUNING_ACTIVE
+            {
+                if( best_move_value >= b ) // kladema bash b
+                    return best_move_value;
+                a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+            }
+            #endif
         }
     }
-    else
+    #else
     {   // den xreiazetai pinaka apo kiniseis an den kanei reorder
         Position new_position;
         // eksereunhsh kinisewn
-        for( int i = 0 ; i < legal_moves_num ; i++)
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
         {
             // kanei kinish
             copy_position( &position , &new_position ); 
@@ -121,19 +160,26 @@ int max_value ( Position position , int depth , int a , int b  )
             best_move_value = best_move_value < value ? value : best_move_value;
 
             // a-b prunning
-            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value >= b ) // kladema bash b
-                return best_move_value;
-            a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+            #if A_B_PRUNING_ACTIVE
+            {
+                if( best_move_value >= b ) // kladema bash b
+                    return best_move_value;
+                a = a < best_move_value ? best_move_value : a; // enhmerwsh a
+            }
+            #endif
         }
-    }    
+    }
+    #endif 
     return best_move_value;
 }
 
 int min_value ( Position position , int depth , int a , int b  )
 {
-    // stats
+    #if LOGGING
+        __atomic_fetch_add(&min_num, 1, __ATOMIC_SEQ_CST);
+    #endif
+
     depth++;
-    min_num++;
 
     // elenxos pidimatos
     int jump_flag = jump_possible( &position );
@@ -164,26 +210,30 @@ int min_value ( Position position , int depth , int a , int b  )
     else
         legal_moves_num = find_moves_black( &position , legal_moves , jump_flag );
 
-    if( MOVE_REORDER_ACTIVE == TRUE )
+    #if MOVE_REORDER_ACTIVE
     {
         // kanei kiniseis kai reorder ta apotelesmata tous
         Position new_positions[legal_moves_num];
         do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
-        // eksereunhsh kinisewn anapoda logo sort tou reorder.
-        for( int i = 0 ; i < legal_moves_num ; i++)
+        // eksereunhsh kinisewn. Anapoda giati h qsort tis sortarei apo thn mikroterh timh pros sthn megaluterh.
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--) /////////////////////////////////////////////////////////////////////
         {
             // minimax
             int value = max_value( new_positions[i] , depth , a , b );
             best_move_value = best_move_value > value ? value : best_move_value;
 
             // a-b prunning
-            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value <= a ) // kladema bash a
-                return best_move_value;
-            b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+            #if A_B_PRUNING_ACTIVE
+            {
+                if( best_move_value <= a ) // kladema bash a
+                    return best_move_value;
+                b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+            }
+            #endif
         }
     }
-    else
+    #else
     {   // den xreiazetai pinaka apo kiniseis an den kanei reorder
         Position new_position;
 
@@ -198,18 +248,27 @@ int min_value ( Position position , int depth , int a , int b  )
             best_move_value = best_move_value > value ? value : best_move_value;
 
             // a-b prunning
-            if( A_B_PRUNING_ACTIVE == TRUE && best_move_value <= a ) // kladema bash a
-                return best_move_value;
-            b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+            #if A_B_PRUNING_ACTIVE
+            {
+                if( best_move_value <= a ) // kladema bash a
+                    return best_move_value;
+                b = b > best_move_value ? best_move_value : b; // enhmerwsh b
+            }
+            #endif
         }
     }
+    #endif
+
     return best_move_value;
 }
 
 int terminal_test( Position* position , int depth , int jump_flag )
 {
-    if ( depth > max_depth)
+    #if NO_STOP_AT_VOLATILE
+    if ( depth > max_depth )
         max_depth = depth;
+    #endif
+
     // den afhnw na stamathsei an exei pidima gia na meiw8ei horizon effect
     if ( depth >= SEARCH_DEPTH )
     {
@@ -222,8 +281,7 @@ int terminal_test( Position* position , int depth , int jump_flag )
             return TRUE;
         }
     }
-    // printf("depth: %d , white: %d , black: %d\n" , depth , position->ants[WHITE] , position->ants[BLACK] );
-    // printf("score white: %d , score black: %d\n" , position->score[WHITE] , position->score[BLACK] );
+
     // statistika gia to position
     int food_remaining = 0;
     int upsulotero_grammh_aspro = -1;
@@ -559,4 +617,13 @@ void do_moves_and_reorder( Position* position , Position* new_positions , Move* 
 int comparitor( const void * lhs , const void * rhs )
 {
     return ( ( (Position*) lhs )->heurestic_value - ( (Position*) rhs )->heurestic_value );
+}
+
+void* thread_work( void* param )
+{
+    Thread_data* thread_data = (Thread_data*) param;
+    thread_data->value = min_value( thread_data->position , 0 , INT_MIN , INT_MAX );
+
+    // thread_exit
+    pthread_exit(NULL);
 }
