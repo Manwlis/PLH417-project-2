@@ -67,7 +67,9 @@ int main( int argc, char ** argv )
 
 			case NM_NEW_POSITION:		//server is trying to send us a new position
 				getPosition( &gamePosition, mySocket );
-				//printPosition( &gamePosition );
+				#if !LOGGING
+					printPosition( &gamePosition );
+				#endif
 				break;
 
 			case NM_COLOR_W:			//server indorms us that we have WHITE color

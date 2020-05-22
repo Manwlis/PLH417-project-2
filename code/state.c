@@ -129,7 +129,7 @@ int max_value ( Position position , int depth , int a , int b  )
         do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
         // eksereunhsh kinisewn. Anapoda giati h qsort tis sortarei apo thn mikroterh timh pros sthn megaluterh.
-        for( int i = legal_moves_num - 1 ; i >= 0 ; i--) /////////////////////////////////////////////////////////////////////
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
         {
             // minimax
             int value = min_value( new_positions[i] , depth , a , b );
@@ -217,7 +217,7 @@ int min_value ( Position position , int depth , int a , int b  )
         do_moves_and_reorder( &position , new_positions , legal_moves , legal_moves_num );
 
         // eksereunhsh kinisewn. Anapoda giati h qsort tis sortarei apo thn mikroterh timh pros sthn megaluterh.
-        for( int i = legal_moves_num - 1 ; i >= 0 ; i--) /////////////////////////////////////////////////////////////////////
+        for( int i = legal_moves_num - 1 ; i >= 0 ; i--)
         {
             // minimax
             int value = max_value( new_positions[i] , depth , a , b );
