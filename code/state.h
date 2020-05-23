@@ -5,12 +5,12 @@
 #include "board.h"
 #include "move.h"
 
-#define LOGGING 0
+#define LOGGING 1
 
-#define SEARCH_DEPTH 11
+#define SEARCH_DEPTH 10
 #define A_B_PRUNING_ACTIVE 1
 #define MOVE_REORDER_ACTIVE 1
-#define NO_STOP_AT_VOLATILE 1
+#define NO_STOP_AT_VOLATILE 0
 #define MULTITHREDING 1
 #define MAX_LEGAL_MOVES 25
 
@@ -24,16 +24,16 @@ typedef struct
 {
     Position position;
     int value;
-    
 } Thread_data;
 
 char goodies_color;
 char badies_color;
 
-int num_moves;
+// statistics
 int max_depth;
 int min_num;
 int max_num;
+int over_limit;
 
 
 /**********************************************************/

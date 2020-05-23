@@ -81,14 +81,16 @@ void minimax_decision( Position* position , Move* move )
         }
     }
     #endif
-
-    num_moves = legal_moves_num; // track statistics
 }
 
 int max_value ( Position position , int depth , int a , int b  )
 {
     #if LOGGING
-    __atomic_fetch_add(&max_num, 1, __ATOMIC_SEQ_CST);
+        #if MULTITHREDING
+            __atomic_fetch_add( &max_num , 1 , __ATOMIC_RELAXED );
+        #else
+            max_num++;
+        #endif
     #endif
 
     depth++;
@@ -176,7 +178,11 @@ int max_value ( Position position , int depth , int a , int b  )
 int min_value ( Position position , int depth , int a , int b  )
 {
     #if LOGGING
-        __atomic_fetch_add(&min_num, 1, __ATOMIC_SEQ_CST);
+        #if MULTITHREDING
+            __atomic_fetch_add( &min_num , 1 , __ATOMIC_RELAXED );
+        #else
+            min_num++;
+        #endif
     #endif
 
     depth++;
@@ -265,8 +271,18 @@ int min_value ( Position position , int depth , int a , int b  )
 int terminal_test( Position* position , int depth , int jump_flag )
 {
     #if NO_STOP_AT_VOLATILE
-    if ( depth > max_depth )
-        max_depth = depth;
+        if ( depth > max_depth )
+            {
+                max_depth = depth;
+            }
+        if ( depth > SEARCH_DEPTH )
+        {
+            #if MULTITHREDING
+                __atomic_fetch_add( &over_limit , 1 , __ATOMIC_RELAXED );
+            #else
+                over_limit++;
+            #endif
+        }
     #endif
 
     // den afhnw na stamathsei an exei pidima gia na meiw8ei horizon effect

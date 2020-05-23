@@ -6,7 +6,6 @@
 #include <getopt.h>
 #include <sys/time.h>
 
-int moves_max = 0;
 
 int main( int argc, char ** argv )
 {
@@ -92,10 +91,13 @@ int main( int argc, char ** argv )
 
 				myMove.color = myColor;
 				
-				num_moves = 0;
+				// gia logging
 				min_num = 0;
 				max_num = 0;
+
+				// gia to no_stop_at_volatile
 				max_depth = 0;
+				over_limit = 0;
 
 				if( !canMove( &gamePosition, myColor ) )
 				{
@@ -115,25 +117,23 @@ int main( int argc, char ** argv )
 
 				// track stats
 				turn++;
-				if( num_moves > moves_max )
-					moves_max = num_moves;
 
 				// ektupwsh
 				#if LOGGING
-				printf("%d %d %d %f\n" , turn , min_num , max_num ,
-					(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec));
+				printf("%d %d %d %f %d %d\n" , turn ,  min_num , max_num ,
+					(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec) ,
+					max_depth , over_limit );
 				fflush(stdout);
 				#else
 					printf("!!!!!! TURN: %d !!!!!! ---------------------------------------\n" , turn );
 					printPosition( &gamePosition );
-					printf("Num legal moves: %d\n" , num_moves );
 					printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
 					//printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
 					printf ("Total time = %f seconds\n",
 							(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
 							(double) (tv2.tv_sec - tv1.tv_sec));
 					#if NO_STOP_AT_VOLATILE
-						printf("Max depth: %d\n" , max_depth);
+						printf("Max depth: %d , over limit=%d\n" , max_depth , over_limit );
 					#endif
 					printf("--------------------------------------------------------------\n" );
 				#endif
@@ -141,7 +141,6 @@ int main( int argc, char ** argv )
 				break;
 
 			case NM_QUIT:			//server wants us to quit...we shall obey
-				printf("\nMoves max: %d \n" , moves_max);
 				close( mySocket );
 				return 0;
 		}
