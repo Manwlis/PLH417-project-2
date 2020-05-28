@@ -7,11 +7,14 @@
 
 #define LOGGING 1
 
-#define SEARCH_DEPTH 10
+#define SEARCH_DEPTH 12
 #define A_B_PRUNING_ACTIVE 1
 #define MOVE_REORDER_ACTIVE 1
+
 #define NO_STOP_AT_VOLATILE 0
-#define MULTITHREDING 1
+
+#define MULTITHREDING 0
+
 #define MAX_LEGAL_MOVES 25
 
 /** Ws state, 8ewrw ena stigmaiothpo tou board meta apo ka8e kinish.

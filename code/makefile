@@ -4,7 +4,7 @@ guiServer: board comm gameServer guiServer.h global.h
 	gcc -o guiServer guiServer.c board.o comm.o gameServer.o -O3 `pkg-config --libs --cflags gtk+-2.0`
 
 client: client.c board comm global.h
-	gcc -pthread -c state.c -Og -pedantic
+	gcc -pthread -c state.c -flto -Ofast -pedantic  -fno-stack-protector
 	gcc -pthread -o client client.c board.o comm.o state.o -O3 -pedantic
 	gcc -o randomClient randomClient.c board.o comm.o -O3
 

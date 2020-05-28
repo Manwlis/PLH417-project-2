@@ -107,7 +107,6 @@ int main( int argc, char ** argv )
 				{		
 					minimax_decision( &gamePosition , &myMove );
 				}
-// TO_DO: na dokimasw xeirokinita dead_diff kai food_diff
 
 				gettimeofday(&tv2, NULL);
 
@@ -120,9 +119,8 @@ int main( int argc, char ** argv )
 
 				// ektupwsh
 				#if LOGGING
-				printf("%d %d %d %f %d %d\n" , turn ,  min_num , max_num ,
-					(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec) ,
-					max_depth , over_limit );
+				printf("%d %d %f\n" , turn ,  min_num + max_num ,
+					(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec) ); // %d %d ,	max_depth , over_limit 
 				fflush(stdout);
 				#else
 					printf("!!!!!! TURN: %d !!!!!! ---------------------------------------\n" , turn );
