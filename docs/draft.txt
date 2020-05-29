@@ -1,0 +1,52 @@
+Prologos								ok
+	nea arxeia							ok
+
+epeksigish								
+	minimax								οκ		
+		ti 8ewrw ws state (position)	ok
+			allages sto position		ok
+			do move2					ok
+		sunarthsh katallhlothtas		οκ
+		sunarthsh termatismou			οκ
+			horizon effect				οκ
+
+	a-b prunning						οκ
+		prow8hmenes kiniseis prwta		οκ
+	reorder								οκ
+		euretikh sunarthsh				οκ
+
+	parallilh anazhthsh					οκ
+
+	loipa optimization											ok
+		elaxistopoihsh klisewn sunartisewn						οκ
+		megaluterh xrhsh mnhmhs – ligoteroi upologismoi			οκ
+
+peiramatikh diadikasia
+
+	metrhseis													οκ
+		ti 8ewrw ws kostos algori8mou – posotikopoihsh			οκ
+			poiothta epilogwn: ba8os							οκ
+			taxuthta: kliseis anadromikwn sunarthsewn / xronos	οκ
+
+		diagrammata
+
+	sumperasmata
+		a-b kobei peripou tis mises anadromes, opws sthn 8ewria
+
+		kateu8unsh a-b?
+
+		pou boh8aei to reorder, εξωμάλυνση spikes
+		giati dn exei megalh diafora ευρετική / μικρή διαφορά μεταξύ κινήσεων.
+
+		χρόνος ανα εκκατομύριο κλησεις
+
+		extra klhseis
+
+		parallhlopoihsh boh8aei kai as einai polu aplh. Beltiwsh me work scheduling/stealing schema
+		epireazetai apo pc
+
+		kalhteros sundiasmos
+
+		beltiwsh me transposition table
+
+phges 
