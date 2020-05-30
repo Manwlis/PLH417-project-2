@@ -270,17 +270,13 @@ int min_value ( Position position , int depth , int a , int b  )
 
 int terminal_test( Position* position , int depth , int jump_flag )
 {
-            if ( depth > max_depth )
-        {
-            max_depth = depth;
-        }
     #if NO_STOP_AT_VOLATILE
         if(depth > VOLATILE_MAX_DEPTH )
             return TRUE;
+            
         if ( depth > max_depth )
-        {
             max_depth = depth;
-        }
+        
         if ( depth > SEARCH_DEPTH )
         {
             #if MULTITHREDING

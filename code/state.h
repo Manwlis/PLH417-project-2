@@ -5,9 +5,11 @@
 #include "board.h"
 #include "move.h"
 
-#define LOGGING 1
+// gia thn eksagwgh statistikwn
+#define LOGGING 0
 
 #define SEARCH_DEPTH 11
+
 #define A_B_PRUNING_ACTIVE 1
 #define MOVE_REORDER_ACTIVE 1
 
@@ -16,6 +18,7 @@
 
 #define MULTITHREDING 1
 
+// 8ewritika mexri 24 kiniseis, praktika den exw dei panw apo 15
 #define MAX_LEGAL_MOVES 25
 
 /** Ws state, 8ewrw ena stigmaiothpo tou board meta apo ka8e kinish.

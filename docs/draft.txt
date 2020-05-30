@@ -30,23 +30,33 @@ peiramatikh diadikasia
 
 		diagrammata
 
-	sumperasmata
-		a-b kobei peripou tis mises anadromes, opws sthn 8ewria
+sumperasmata
+	a-b kobei αναδρομές											οκ
 
-		kateu8unsh a-b?
+	kateu8unsh a-b?												οχι
 
-		pou boh8aei to reorder, εξωμάλυνση spikes
-		giati dn exei megalh diafora ευρετική / μικρή διαφορά μεταξύ κινήσεων.
+	pou boh8aei to reorder, εξωμάλυνση spikes					οκ
+	giati dn exei megalh diafora ευρετική						οκ
+	μικρή διαφορά μεταξύ κινήσεων.								οκ
 
-		χρόνος ανα εκκατομύριο κλησεις
+	χρόνος ανα εκκατομύριο κλησεις								οκ
 
-		extra klhseis
+	extra klhseis												οκ
 
-		parallhlopoihsh boh8aei kai as einai polu aplh. Beltiwsh me work scheduling/stealing schema
-		epireazetai apo pc
+	parallhlopoihsh boh8aei kai as einai polu aplh.				οκ
+	Beltiwsh me work scheduling/stealing schema					οκ
+	epireazetai apo pc											οκ
 
-		kalhteros sundiasmos
+	kalhteros sundiasmos										ok
 
-		beltiwsh me transposition table
+future work
+	kalutero ordering											ok
+	beltiwsh me transposition table								ok
 
 phges 
+
+
+
+killer move
+Most Valuable Victim - Least Valuable Aggressor
+
