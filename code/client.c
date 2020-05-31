@@ -127,13 +127,9 @@ int main( int argc, char ** argv )
 					printf("!!!!!! TURN: %d !!!!!! ---------------------------------------\n" , turn );
 					printPosition( &gamePosition );
 					printf("I chose to go from (%d,%d), to (%d,%d)\n",myMove.tile[0][0],myMove.tile[1][0],myMove.tile[0][1],myMove.tile[1][1]);
-					//printf("Plh8os kombwn: %d , %d\n", min_num , max_num );
 					printf ("Total time = %f seconds\n",
 							(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
 							(double) (tv2.tv_sec - tv1.tv_sec));
-					#if NO_STOP_AT_VOLATILE
-						printf("Max depth: %d , over limit=%d\n" , max_depth , over_limit );
-					#endif
 					printf("--------------------------------------------------------------\n" );
 				#endif
 				

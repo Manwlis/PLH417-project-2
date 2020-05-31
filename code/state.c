@@ -273,18 +273,22 @@ int terminal_test( Position* position , int depth , int jump_flag )
     #if NO_STOP_AT_VOLATILE
         if(depth > VOLATILE_MAX_DEPTH )
             return TRUE;
-            
-        if ( depth > max_depth )
-            max_depth = depth;
-        
-        if ( depth > SEARCH_DEPTH )
+
+        #if LOGGING
         {
-            #if MULTITHREDING
-                __atomic_fetch_add( &over_limit , 1 , __ATOMIC_RELAXED );
-            #else
-                over_limit++;
-            #endif
+            if ( depth > max_depth )
+                max_depth = depth;
+            
+            if ( depth > SEARCH_DEPTH )
+            {
+                #if MULTITHREDING
+                    __atomic_fetch_add( &over_limit , 1 , __ATOMIC_RELAXED );
+                #else
+                    over_limit++;
+                #endif
+            }
         }
+        #endif
     #endif
 
     // den afhnw na stamathsei an exei pidima gia na meiw8ei horizon effect
