@@ -1,3 +1,5 @@
+# TUCAnts-agent
+
 Το project υλοποιήθηκε σε C με gcc 7.0
 
 compile: make all
@@ -5,7 +7,4 @@ run: ./client
 
 Στο αρχείο state.h υπάρχουν τα flags για την ενεργοποίηση/απενεργοποίηση των λειτουργιών του πράκτορα και το βάθος της αναζήτησης. Υπάρχει και το flag LOGGING, που αν ενεργοποιηθεί αλλάζουν τα μηνήματα που εκτυπώνει ο πράκτορας για την διευκόλυνση εξαγωγής στατιστικών
 
-Specs pc μετρήσεων: 2core i5-2750M @ 2.5GHz με 8GB DDR3 ram @ 1600 MT/s
-
-github link: https://github.com/Manwlis/PLH417-project-2
-Εκεί υπάρχουν τα αρχεία με τις μετρήσεις.
+Benchmarked on: 2core i5-2750M @ 2.5GHz with 8GB DDR3 ram @ 1600 MT/s
